@@ -9,7 +9,8 @@ def main():
     parser.add_argument("--task_id", required=True, help="The ID of the task to cancel.")
     args = parser.parse_args()
 
-    status_file = os.path.join("logs", "status", f"{args.task_id}.status.json")
+    # Updated to point to project-local logs
+    status_file = os.path.join(os.getcwd(), "logs", "orchestration", "status", f"{args.task_id}.status.json")
 
     if not os.path.exists(status_file):
         print(json.dumps({"error": f"Status file not found: {status_file}"}))
