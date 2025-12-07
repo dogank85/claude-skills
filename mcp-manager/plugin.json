@@ -1,8 +1,5 @@
 {
   "name": "mcp-manager",
   "version": "1.0.0",
-  "description": "Manage MCP servers for Claude Code, Codex, and Gemini.",
-  "agents": [
-    "./agents/manager.md"
-  ]
+  "description": "Manage MCP servers for Claude Code, Codex, and Gemini."
 }

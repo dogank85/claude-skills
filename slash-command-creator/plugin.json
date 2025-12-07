@@ -1,8 +1,5 @@
 {
   "name": "slash-command-creator",
   "version": "1.0.0",
-  "description": "Helps you create custom slash commands for Gemini, Claude, and Codex.",
-  "agents": [
-    "./agents/creator.md"
-  ]
+  "description": "Helps you create custom slash commands for Gemini, Claude, and Codex."
 }
