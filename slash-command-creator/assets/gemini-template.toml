@@ -1,0 +1,17 @@
+# Gemini CLI Custom Command Template
+# Location: ~/.gemini/commands/ (global) or <project>/.gemini/commands/ (project)
+# Name: The filename (without .toml) becomes the command name
+# Namespacing: Use subdirectories (e.g., git/commit.toml becomes /git:commit)
+
+# Required field
+prompt = """
+Your prompt text here.
+This can be multi-line.
+
+Use {{args}} to inject user arguments.
+Use !{shell command} to execute and inject shell output.
+Use @{path/to/file} to inject file contents.
+"""
+
+# Optional field
+description = "Brief one-line description shown in /help menu"

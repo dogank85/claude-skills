@@ -1,14 +1,26 @@
 {
-    "name": "herokid-local-marketplace",
-    "owner": {
-        "name": "Dogan Karakaya"
+  "name": "herokid-local-marketplace",
+  "owner": {
+    "name": "Dogan Karakaya"
+  },
+  "plugins": [
+    {
+      "name": "orchestration-skill",
+      "source": "./orchestration-skill",
+      "description": "Headless agent orchestration for Gemini, Claude, and Codex.",
+      "version": "1.0.0"
     },
-    "plugins": [
-        {
-            "name": "orchestration-skill",
-            "source": "./orchestration-skill",
-            "description": "Headless agent orchestration for Gemini, Claude, and Codex.",
-            "version": "1.0.0"
-        }
-    ]
+    {
+      "name": "slash-command-creator",
+      "source": "./slash-command-creator",
+      "description": "Helps you create custom slash commands.",
+      "version": "1.0.0"
+    },
+    {
+      "name": "mcp-manager",
+      "source": "./mcp-manager",
+      "description": "Manage MCP servers for Claude Code, Codex, and Gemini.",
+      "version": "1.0.0"
+    }
+  ]
 }
