@@ -9,10 +9,8 @@ def main():
     
     args = parser.parse_args()
     
-    # Locate logs directory
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    skill_root = os.path.dirname(script_dir)
-    log_dir = os.path.join(skill_root, "logs")
+    # Locate logs directory relative to Current Working Directory
+    log_dir = os.path.join(os.getcwd(), "logs", "orchestration")
     status_file = os.path.join(log_dir, "status", f"{args.task_id}.status.json")
     
     if not os.path.exists(status_file):

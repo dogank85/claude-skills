@@ -58,12 +58,12 @@ python3 scripts/list_active_tasks.py
 
 ## Directory Structure
 
-*   `logs/`: Stores all task logs and status files.
-    *   `logs/raw/<task_id>.log`: Full stdout/stderr of the agent.
-    *   `logs/status/<task_id>.status.json`: Structured status file.
-    *   `logs/status/<task_id>.pid`: File containing the process ID (PID) of the agent task.
-    *   `logs/results/<task_id>.summary.md`: Concise summary written by the agent.
-    *   `logs/results/<task_id>_report.md`: Detailed report (if requested).
+*   `./logs/orchestration/`: Stores all task logs and status files (relative to PROJECT ROOT).
+    *   `./logs/orchestration/raw/<task_id>.log`: Full stdout/stderr of the agent.
+    *   `./logs/orchestration/status/<task_id>.status.json`: Structured status file.
+    *   `./logs/orchestration/status/<task_id>.pid`: File containing the process ID (PID) of the agent task.
+    *   `./logs/orchestration/results/<task_id>.summary.md`: Concise summary written by the agent.
+    *   `./logs/orchestration/results/<task_id>_report.md`: Detailed report (if requested).
 
 ## Workflow Example
 

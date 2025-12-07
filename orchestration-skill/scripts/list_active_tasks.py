@@ -3,9 +3,7 @@ import os
 import glob
 
 def main():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    skill_root = os.path.dirname(script_dir)
-    log_dir = os.path.join(skill_root, "logs", "status")
+    log_dir = os.path.join(os.getcwd(), "logs", "orchestration", "status")
     
     if not os.path.exists(log_dir):
         print("[]")

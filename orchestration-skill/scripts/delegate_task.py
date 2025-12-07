@@ -23,10 +23,9 @@ def main():
     task_id = args.task_id or str(uuid.uuid4())[:8]
     
     # 2. Setup Logs Directory
-    # Resolve relative to this script's location (scripts/.. -> root)
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    skill_root = os.path.dirname(script_dir)
-    base_log_dir = os.path.join(skill_root, "logs")
+    # Resolve relative to the Current Working Directory (Project Root)
+    # This makes the skill portable and keeps logs in the user's project
+    base_log_dir = os.path.join(os.getcwd(), "logs", "orchestration")
     raw_dir = os.path.join(base_log_dir, "raw")
     status_dir = os.path.join(base_log_dir, "status")
     results_dir = os.path.join(base_log_dir, "results")
