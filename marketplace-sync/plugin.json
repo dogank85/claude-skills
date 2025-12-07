@@ -1,0 +1,5 @@
+{
+    "name": "marketplace-sync",
+    "version": "1.0.0",
+    "description": "Syncs skills from your current project to a local marketplace repository."
+}
