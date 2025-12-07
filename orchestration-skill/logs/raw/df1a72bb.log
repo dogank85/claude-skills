@@ -1,0 +1,164 @@
+YOLO mode is enabled. All tool calls will be automatically approved.
+Loaded cached credentials.
+Loading extension: chrome-devtools-mcp
+Loading extension: code-review
+Loading extension: nanobanana
+Error executing tool write_todos: Invalid parameters: Only one task can be "in_progress" at a time.
+Error executing tool write_todos: Invalid parameters: Only one task can be "in_progress" at a time.
+{
+  "response": "Phase 1 tasks are complete.\n\n1.  **Dependencies Installed:** `pnpm install` completed.\n2.  **Environment Configured:**\n    *   `.env.example` updated with missing keys.\n    *   `.env.local.template` created.\n    *   `docs/ENV_VARIABLES.md` updated.\n3.  **Tests Fixed & Passing:**\n    *   Fixed build errors in `@herokid/ai` (tsconfig, types).\n    *   Generated Prisma Client for `@herokid/database`.\n    *   Fixed flaky date logic in `@herokid/validators` tests.\n    *   Fixed Runtime/Env issues in `@herokid/ai` tests (Jest -> Vi, Hoisting, Env Vars).\n    *   Verified Web cron tests pass.\n4.  **Documentation:** `PRE_DEPLOYMENT_CHECKLIST.md` created.\n5.  **Reporting:** Summary and Detailed Report written to specified paths.\n\nReady for Phase 2.",
+  "stats": {
+    "models": {
+      "gemini-3-pro-preview": {
+        "api": {
+          "totalRequests": 36,
+          "totalErrors": 0,
+          "totalLatencyMs": 371593
+        },
+        "tokens": {
+          "prompt": 1971051,
+          "candidates": 11708,
+          "total": 1994705,
+          "cached": 1647865,
+          "thoughts": 11946,
+          "tool": 0
+        }
+      },
+      "gemini-2.5-flash": {
+        "api": {
+          "totalRequests": 2,
+          "totalErrors": 0,
+          "totalLatencyMs": 23272
+        },
+        "tokens": {
+          "prompt": 69916,
+          "candidates": 320,
+          "total": 74878,
+          "cached": 0,
+          "thoughts": 4642,
+          "tool": 0
+        }
+      },
+      "gemini-2.5-pro": {
+        "api": {
+          "totalRequests": 1,
+          "totalErrors": 0,
+          "totalLatencyMs": 14604
+        },
+        "tokens": {
+          "prompt": 69041,
+          "candidates": 172,
+          "total": 70051,
+          "cached": 0,
+          "thoughts": 838,
+          "tool": 0
+        }
+      },
+      "gemini-2.5-flash-lite": {
+        "api": {
+          "totalRequests": 2,
+          "totalErrors": 0,
+          "totalLatencyMs": 1364
+        },
+        "tokens": {
+          "prompt": 794,
+          "candidates": 26,
+          "total": 820,
+          "cached": 0,
+          "thoughts": 0,
+          "tool": 0
+        }
+      }
+    },
+    "tools": {
+      "totalCalls": 68,
+      "totalSuccess": 66,
+      "totalFail": 2,
+      "totalDurationMs": 75636,
+      "totalDecisions": {
+        "accept": 0,
+        "reject": 0,
+        "modify": 0,
+        "auto_accept": 66
+      },
+      "byName": {
+        "write_todos": {
+          "count": 9,
+          "success": 7,
+          "fail": 2,
+          "durationMs": 2,
+          "decisions": {
+            "accept": 0,
+            "reject": 0,
+            "modify": 0,
+            "auto_accept": 7
+          }
+        },
+        "list_directory": {
+          "count": 6,
+          "success": 6,
+          "fail": 0,
+          "durationMs": 10,
+          "decisions": {
+            "accept": 0,
+            "reject": 0,
+            "modify": 0,
+            "auto_accept": 6
+          }
+        },
+        "run_shell_command": {
+          "count": 13,
+          "success": 13,
+          "fail": 0,
+          "durationMs": 57999,
+          "decisions": {
+            "accept": 0,
+            "reject": 0,
+            "modify": 0,
+            "auto_accept": 13
+          }
+        },
+        "read_file": {
+          "count": 18,
+          "success": 18,
+          "fail": 0,
+          "durationMs": 21,
+          "decisions": {
+            "accept": 0,
+            "reject": 0,
+            "modify": 0,
+            "auto_accept": 18
+          }
+        },
+        "replace": {
+          "count": 18,
+          "success": 18,
+          "fail": 0,
+          "durationMs": 16221,
+          "decisions": {
+            "accept": 0,
+            "reject": 0,
+            "modify": 0,
+            "auto_accept": 18
+          }
+        },
+        "write_file": {
+          "count": 4,
+          "success": 4,
+          "fail": 0,
+          "durationMs": 1383,
+          "decisions": {
+            "accept": 0,
+            "reject": 0,
+            "modify": 0,
+            "auto_accept": 4
+          }
+        }
+      }
+    },
+    "files": {
+      "totalLinesAdded": 203,
+      "totalLinesRemoved": 68
+    }
+  }
+}
