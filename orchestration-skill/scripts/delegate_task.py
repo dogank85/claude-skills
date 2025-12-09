@@ -94,11 +94,15 @@ def main():
     agent_cmd = ""
     
     # Determine model/flags based on effort level
-    gemini_model = "gemini-2.5-flash"
-    claude_model = "haiku"
+    gemini_model = "gemini-3-pro-preview"
+    claude_model = "sonnet-4.5"
+    codex_model = "gpt-5.1-codex-max"
     
     if args.effort == "high":
-        gemini_model = "gemini-3-pro-preview"
+        # Gemini is already on pro-preview by default, maybe we keep it or switch to Ultra if that existed, 
+        # but user just said default should be pro-preview. 
+        # For now, sticking to what user asked: default is pro-preview.
+        # If high effort is asked for Claude, we switch to Sonnet.
         claude_model = "sonnet"
 
     if args.agent == "claude":
@@ -117,13 +121,19 @@ def main():
             agent_cmd += f' --resume {parent_session_id}'
             
     elif args.agent == "codex":
+        # Construct base command with model
+        base_cmd = f'codex exec --model {codex_model}'
+        
         if parent_session_id:
-            agent_cmd = f'codex exec resume {parent_session_id} {safe_prompt} --json'
+            agent_cmd = f'{base_cmd} resume {parent_session_id} {safe_prompt} --json'
         else:
-            agent_cmd = f'codex exec {safe_prompt} --json'
+            agent_cmd = f'{base_cmd} {safe_prompt} --json'
         
         if args.effort == "high":
             agent_cmd += ' -c model_reasoning_effort="high"'
+        else:
+            # Explicitly set medium/default if needed, or rely on model default
+            agent_cmd += ' -c model_reasoning_effort="medium"'
             
         if args.sandbox:
             agent_cmd += ' --sandbox workspace-write'
