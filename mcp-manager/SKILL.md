@@ -15,6 +15,7 @@ This skill helps you manage MCP servers for different command-line interfaces. I
 ### When to Use This Skill
 
 Use this skill when the user asks to:
+
 - Add a new MCP server.
 - Configure an existing MCP server.
 - List available MCP servers.
@@ -26,15 +27,15 @@ The user must specify which CLI they are targeting (Claude, Codex, or Gemini).
 
 1.  **Identify the target CLI:** Ask the user which CLI they want to configure (Claude, Codex, or Gemini).
 2.  **Gather server details:** Ask the user for the necessary information to configure the server. This may include:
-    *   Server name
-    *   Transport type (stdio, http, sse)
-    *   URL or command
-    *   Authentication details (API keys, headers, etc.)
-    *   Scope (for Claude and Gemini)
+    - Server name
+    - Transport type (stdio, http, sse)
+    - URL or command
+    - Authentication details (API keys, headers, etc.)
+    - Scope (for Claude and Gemini)
 3.  **Consult the reference documents:** The `references/` directory contains detailed documentation for each CLI's MCP implementation. Use these documents to construct the correct command.
-    *   For Claude, refer to `references/claude_mcp.md`.
-    *   For Codex, refer to `references/codex_mcp.md`.
-    *   For Gemini, refer to `references/gemini_mcp.md`.
+    - For Claude, refer to `references/claude_mcp.md`.
+    - For Codex, refer to `references/codex_mcp.md`.
+    - For Gemini, refer to `references/gemini_mcp.md`.
 4.  **Construct and execute the command:** Based on the user's request and the reference material, construct the appropriate command and execute it using the `run_shell_command` tool.
 
 ### Example: Adding a Server
@@ -46,6 +47,7 @@ The user must specify which CLI they are targeting (Claude, Codex, or Gemini).
 **User:** "The name is `my-server`, it's a stdio server, and the command is `python server.py`."
 
 **Action:**
+
 1.  Consult `references/gemini_mcp.md` to find the `gemini mcp add` command syntax.
 2.  Construct the command: `gemini mcp add my-server python server.py`
 3.  Execute the command using `run_shell_command`.

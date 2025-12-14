@@ -106,6 +106,7 @@ codex exec resume <SESSION_ID> "Continue implementation"
 ### Detecting Failures
 
 **Claude Code (JSON output):**
+
 ```bash
 result=$(claude -p "Run workflow" --output-format json)
 is_error=$(echo "$result" | jq -r '.is_error')
@@ -118,6 +119,7 @@ fi
 ```
 
 **Gemini CLI (JSON output):**
+
 ```bash
 result=$(gemini -p "Run workflow" --output-format json)
 error=$(echo "$result" | jq -r '.error')
@@ -130,6 +132,7 @@ fi
 ```
 
 **Codex CLI (exit code):**
+
 ```bash
 if ! codex exec "Run workflow" 2>error.log; then
   echo "Error occurred:" >&2
@@ -222,16 +225,19 @@ cat result3.json
 ### Streaming vs Final Output
 
 **Claude Code:**
+
 - Text output: Human-readable, final message only
 - JSON output: Structured with metadata (session_id, cost, etc.)
 - Stream JSON output: Real-time events (use `--output-format stream-json`)
 
 **Gemini CLI:**
+
 - Text output: Human-readable, final message only
 - JSON output: Structured with stats (tokens, tools, files)
 - Stream JSON output: Real-time JSONL events
 
 **Codex CLI:**
+
 - Default: Final message to stdout, progress to stderr
 - JSON: JSONL stream with all events (`--json`)
 - Output file: Save final message (`-o output.md`)
@@ -281,6 +287,7 @@ echo " Done!"
 ### Passing Context Between Delegations
 
 **Anti-pattern (bloats context):**
+
 ```bash
 # DON'T: Read entire output into context
 result=$(claude -p "Generate plan")
@@ -288,6 +295,7 @@ claude -p "Implement this plan: $result"  # Bloats context!
 ```
 
 **Good pattern (use files):**
+
 ```bash
 # DO: Save to file and reference
 claude -p "Generate plan" --output-format json | jq -r '.result' > plan.md

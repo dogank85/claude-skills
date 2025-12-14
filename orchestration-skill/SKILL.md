@@ -17,9 +17,11 @@ This skill enables the orchestration of other AI agents (Claude Code, Gemini CLI
 ## Tools
 
 ### `delegate_task`
+
 Launches a new task with a specified agent.
 
 **Usage:**
+
 ```bash
 python3 scripts/delegate_task.py --agent claude --prompt "Refactor the login component"
 # To resume context from a previous task:
@@ -38,9 +40,11 @@ python3 scripts/delegate_task.py --agent claude --prompt "Audit security" --repo
 A JSON object containing the `task_id` and `pid`.
 
 ### `check_status`
+
 Checks the status of a specific task.
 
 **Usage:**
+
 ```bash
 python3 scripts/check_status.py --task_id <TASK_ID>
 ```
@@ -49,21 +53,23 @@ python3 scripts/check_status.py --task_id <TASK_ID>
 A JSON object with `status` ("RUNNING", "COMPLETED", "FAILED") and `summary_file` path if complete.
 
 ### `list_active_tasks`
+
 Lists all currently running tasks.
 
 **Usage:**
+
 ```bash
 python3 scripts/list_active_tasks.py
 ```
 
 ## Directory Structure
 
-*   `./logs/orchestration/`: Stores all task logs and status files (relative to PROJECT ROOT).
-    *   `./logs/orchestration/raw/<task_id>.log`: Full stdout/stderr of the agent.
-    *   `./logs/orchestration/status/<task_id>.status.json`: Structured status file.
-    *   `./logs/orchestration/status/<task_id>.pid`: File containing the process ID (PID) of the agent task.
-    *   `./logs/orchestration/results/<task_id>.summary.md`: Concise summary written by the agent.
-    *   `./logs/orchestration/results/<task_id>_report.md`: Detailed report (if requested).
+- `./logs/orchestration/`: Stores all task logs and status files (relative to PROJECT ROOT).
+  - `./logs/orchestration/raw/<task_id>.log`: Full stdout/stderr of the agent.
+  - `./logs/orchestration/status/<task_id>.status.json`: Structured status file.
+  - `./logs/orchestration/status/<task_id>.pid`: File containing the process ID (PID) of the agent task.
+  - `./logs/orchestration/results/<task_id>.summary.md`: Concise summary written by the agent.
+  - `./logs/orchestration/results/<task_id>_report.md`: Detailed report (if requested).
 
 ## Workflow Example
 

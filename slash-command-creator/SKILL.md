@@ -12,6 +12,7 @@ This skill provides templates and documentation for creating custom slash comman
 ## When to Use This Skill
 
 Use this skill when:
+
 - User requests creating a slash command for any of the three tools
 - User asks to create a custom command or reusable prompt
 - User mentions automating a workflow via slash commands
@@ -21,15 +22,16 @@ Use this skill when:
 
 ### Command Locations by Tool
 
-| Tool | Global Location | Project Location | Format |
-|------|----------------|------------------|---------|
-| **Gemini CLI** | `~/.gemini/commands/` | `.gemini/commands/` | TOML |
+| Tool            | Global Location       | Project Location    | Format   |
+| --------------- | --------------------- | ------------------- | -------- |
+| **Gemini CLI**  | `~/.gemini/commands/` | `.gemini/commands/` | TOML     |
 | **Claude Code** | `~/.claude/commands/` | `.claude/commands/` | Markdown |
-| **Codex CLI** | `~/.codex/prompts/` | N/A | Markdown |
+| **Codex CLI**   | `~/.codex/prompts/`   | N/A                 | Markdown |
 
 ### Template Files
 
 Templates are available in `assets/`:
+
 - `gemini-template.toml` - Gemini CLI command template
 - `claude-code-template.md` - Claude Code command template
 - `codex-template.md` - Codex CLI custom prompt template
@@ -37,6 +39,7 @@ Templates are available in `assets/`:
 ### Reference Documentation
 
 Detailed documentation is available in `references/`:
+
 - `gemini-cli-commands.md` - Gemini CLI built-in commands
 - `gemini-cli-custom-commands.md` - Gemini CLI custom command creation
 - `claude-code-custom-commands.md` - Claude Code custom command creation
@@ -49,12 +52,14 @@ Detailed documentation is available in `references/`:
 ### Claude Code: Full Tool Execution
 
 **Capabilities:**
+
 - ✅ Can execute tools (Read, Grep, Bash, etc.) during command activation
 - ✅ Can programmatically load files and configurations
 - ✅ Commands can include multi-step workflows with tool calls
 - ✅ Supports `allowed-tools` to restrict which tools can be used
 
 **Example:** A command can include instructions like:
+
 ```markdown
 STEP 1: Read `.config/settings.yaml`
 STEP 2: Read each file listed in the config
@@ -66,12 +71,14 @@ Claude Code will **execute** these Read operations automatically (with user appr
 ### Gemini CLI: Shell & File Injection
 
 **Capabilities:**
+
 - ✅ Can execute shell commands via `!{command}` and inject output
 - ✅ Can inject file contents via `@{path}`
 - ✅ Shell execution requires user confirmation
 - ⚠️ Commands are expanded at invocation time, not interactive
 
 **Example:** A command can include:
+
 ```toml
 prompt = """
 Current git status: !{git status}
@@ -84,6 +91,7 @@ Gemini CLI will execute the shell command and read the file, then inject results
 ### Codex CLI: Text Replacement Only
 
 **Capabilities:**
+
 - ✅ Supports argument placeholders (`$1`-`$9`, `$ARGUMENTS`, named variables)
 - ❌ **Cannot execute tools or commands**
 - ❌ **Cannot automatically load files**
@@ -92,11 +100,13 @@ Gemini CLI will execute the shell command and read the file, then inject results
 **Critical Limitation:**
 
 Codex prompts are **pure text replacement**. When you write:
+
 ```markdown
 STEP 1: Read `config.yaml`
 ```
 
 Codex will send this instruction to the model, but **will not execute it automatically**. The model must then:
+
 1. Recognize it should read the file
 2. Use its Read tool
 3. Wait for user approval
@@ -105,6 +115,7 @@ Codex will send this instruction to the model, but **will not execute it automat
 **Workaround Strategies:**
 
 1. **Explicit Instructions:** Tell the model step-by-step what to do
+
    ```markdown
    ## ACTIVATION SEQUENCE
 
@@ -114,6 +125,7 @@ Codex will send this instruction to the model, but **will not execute it automat
    ```
 
 2. **Pre-load Context:** Use `/mention` to add files before invoking
+
    ```bash
    /mention config.yaml
    /mention docs/brand-guidelines.md
@@ -124,28 +136,31 @@ Codex will send this instruction to the model, but **will not execute it automat
 
 ### Comparison Table
 
-| Capability | Claude Code | Gemini CLI | Codex CLI |
-|-----------|-------------|------------|-----------|
-| **Auto-execute tools** | ✅ Yes | ❌ No | ❌ No |
-| **Auto-load files** | ✅ Yes | ✅ Via `@{path}` | ❌ No (must instruct) |
-| **Shell execution** | ✅ Via `` !`cmd` `` | ✅ Via `!{cmd}` | ❌ No |
-| **Workflow automation** | ✅ Full automation | ⚠️ Expand-then-send | ⚠️ Instruction only |
-| **User approval** | Per tool call | Per shell cmd | Per tool call |
+| Capability              | Claude Code         | Gemini CLI          | Codex CLI             |
+| ----------------------- | ------------------- | ------------------- | --------------------- |
+| **Auto-execute tools**  | ✅ Yes              | ❌ No               | ❌ No                 |
+| **Auto-load files**     | ✅ Yes              | ✅ Via `@{path}`    | ❌ No (must instruct) |
+| **Shell execution**     | ✅ Via `` !`cmd` `` | ✅ Via `!{cmd}`     | ❌ No                 |
+| **Workflow automation** | ✅ Full automation  | ⚠️ Expand-then-send | ⚠️ Instruction only   |
+| **User approval**       | Per tool call       | Per shell cmd       | Per tool call         |
 
 ### When Converting Commands Between Tools
 
 **Claude Code → Codex:**
+
 - Change tool executions to explicit instructions
 - Add "ACTIVATION SEQUENCE" sections
 - Set expectations: "Read these files, then greet"
 - Accept that it won't be automatic
 
 **Claude Code → Gemini:**
+
 - Can preserve some automation via `!{...}` and `@{...}`
 - Shell commands work but require confirmation
 - File injection is straightforward
 
 **Gemini → Codex:**
+
 - Lose shell execution (`!{...}` → instructional text)
 - Lose file injection (`@{...}` → "Read this file" instruction)
 
@@ -158,16 +173,19 @@ Codex will send this instruction to the model, but **will not execute it automat
 **File Format:** TOML (`.toml` extension)
 
 **Locations:**
+
 - Global: `~/.gemini/commands/`
 - Project: `.gemini/commands/`
 
 **Key Features:**
+
 - `{{args}}` - Inject user arguments (auto-escapes in shell commands)
 - `!{command}` - Execute shell commands and inject output
 - `@{path}` - Inject file contents
 - Namespacing via subdirectories (e.g., `git/commit.toml` → `/git:commit`)
 
 **Process:**
+
 1. Read `assets/gemini-template.toml` for the base template
 2. Determine scope (global vs project) based on user needs
 3. Create the `.toml` file in the appropriate location
@@ -181,10 +199,12 @@ Codex will send this instruction to the model, but **will not execute it automat
 **File Format:** Markdown (`.md` extension)
 
 **Locations:**
+
 - Personal: `~/.claude/commands/`
 - Project: `.claude/commands/`
 
 **Key Features:**
+
 - YAML frontmatter for metadata (optional)
 - `$1`, `$2`, `$ARGUMENTS` - Positional argument placeholders
 - `` !`command` `` - Execute shell commands and inject output
@@ -193,6 +213,7 @@ Codex will send this instruction to the model, but **will not execute it automat
 - Namespacing via subdirectories
 
 **Process:**
+
 1. Read `assets/claude-code-template.md` for the base template
 2. Determine scope (personal vs project) based on user needs
 3. Create the `.md` file in the appropriate location
@@ -206,9 +227,11 @@ Codex will send this instruction to the model, but **will not execute it automat
 **File Format:** Markdown (`.md` extension)
 
 **Locations:**
+
 - Global only: `~/.codex/prompts/`
 
 **Key Features:**
+
 - YAML frontmatter for metadata (optional)
 - `$1`-`$9` - Positional placeholders (space-separated)
 - `$ARGUMENTS` - All arguments together
@@ -218,6 +241,7 @@ Codex will send this instruction to the model, but **will not execute it automat
 - Invoked as `/prompts:<name>`
 
 **Process:**
+
 1. Read `assets/codex-template.md` for the base template
 2. Create the `.md` file in `~/.codex/prompts/`
 3. Add YAML frontmatter (description, argument-hint)
@@ -231,6 +255,7 @@ Codex will send this instruction to the model, but **will not execute it automat
 ### Step 1: Identify Requirements
 
 Ask or infer:
+
 1. Which tool(s)? (Claude Code, Gemini CLI, Codex CLI, or all three)
 2. What should the command do?
 3. Does it need arguments? What kind?
@@ -241,6 +266,7 @@ Ask or infer:
 ### Step 2: Choose Template
 
 Based on the tool(s) identified, read the appropriate template(s) from `assets/`:
+
 - Gemini CLI → `gemini-template.toml`
 - Claude Code → `claude-code-template.md`
 - Codex CLI → `codex-template.md`
@@ -252,6 +278,7 @@ If the command involves complex features (shell execution, file injection, argum
 ### Step 4: Create the Command File(s)
 
 For each tool:
+
 1. Determine the correct file path based on scope
 2. Create the file with appropriate extension
 3. Fill in metadata (frontmatter or TOML fields)
@@ -262,6 +289,7 @@ For each tool:
 ### Step 5: Inform User
 
 After creating the command(s):
+
 1. Confirm file locations
 2. Explain how to invoke (command name/syntax)
 3. Note any restart requirements (Codex requires restart)
@@ -269,14 +297,14 @@ After creating the command(s):
 
 ## Special Syntax Comparison
 
-| Feature | Gemini CLI | Claude Code | Codex CLI |
-|---------|-----------|-------------|-----------|
-| Arguments | `{{args}}` | `$1`, `$2`, `$ARGUMENTS` | `$1`-`$9`, `$ARGUMENTS`, `$NAMED` |
-| Shell execution | `!{command}` | `` !`command` `` | N/A |
-| File injection | `@{path}` | `@filename` | N/A |
-| Metadata format | TOML fields | YAML frontmatter | YAML frontmatter |
-| Namespacing | Subdirs → `:` | Subdirs (shown in desc) | N/A |
-| Scope options | Global + Project | Personal + Project | Global only |
+| Feature         | Gemini CLI       | Claude Code              | Codex CLI                         |
+| --------------- | ---------------- | ------------------------ | --------------------------------- |
+| Arguments       | `{{args}}`       | `$1`, `$2`, `$ARGUMENTS` | `$1`-`$9`, `$ARGUMENTS`, `$NAMED` |
+| Shell execution | `!{command}`     | `` !`command` ``         | N/A                               |
+| File injection  | `@{path}`        | `@filename`              | N/A                               |
+| Metadata format | TOML fields      | YAML frontmatter         | YAML frontmatter                  |
+| Namespacing     | Subdirs → `:`    | Subdirs (shown in desc)  | N/A                               |
+| Scope options   | Global + Project | Personal + Project       | Global only                       |
 
 ## Common Patterns
 
@@ -328,18 +356,21 @@ After creating the command(s):
 ### Tool-Specific Best Practices
 
 **For Claude Code:**
+
 - Leverage tool execution for automation
 - Use `allowed-tools` to restrict command capabilities
 - Structure multi-step workflows knowing tools will execute
 - Test with approval requirements in mind
 
 **For Gemini CLI:**
+
 - Use `!{...}` for shell commands that gather context
 - Use `@{...}` for injecting file contents
 - Remember: expansion happens before model sees the prompt
 - Test shell commands for security and correctness
 
 **For Codex:**
+
 - Write clear, explicit instructions (model must interpret)
 - Include "ACTIVATION SEQUENCE" for multi-step setups
 - Set expectations: "After reading X, do Y"
@@ -349,6 +380,7 @@ After creating the command(s):
 ### Converting Between Tools
 
 **When converting commands:**
+
 1. Identify tool executions in the source command
 2. Determine if the target tool can replicate the behavior
 3. If not, convert to explicit instructions or document workarounds
@@ -358,13 +390,17 @@ After creating the command(s):
 ## Resources
 
 ### assets/
+
 Template files for each tool's command format:
+
 - `gemini-template.toml` - Start here for Gemini CLI commands
 - `claude-code-template.md` - Start here for Claude Code commands
 - `codex-template.md` - Start here for Codex CLI custom prompts
 
 ### references/
+
 Comprehensive documentation for custom command creation:
+
 - `gemini-cli-commands.md` - Built-in Gemini CLI commands reference
 - `gemini-cli-custom-commands.md` - Complete Gemini CLI custom command guide
 - `claude-code-custom-commands.md` - Complete Claude Code custom command guide

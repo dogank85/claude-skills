@@ -10,7 +10,7 @@ The headless mode allows you to run Claude Code programmatically from command li
 
 The primary command-line interface to Claude Code is the `claude` command. Use the `--print` (or `-p`) flag to run in non-interactive mode and print the final result:
 
-```bash  theme={null}
+```bash theme={null}
 claude -p "Stage my changes and write a set of commits for them" \
   --allowedTools "Bash,Read" \
   --permission-mode acceptEdits
@@ -39,7 +39,7 @@ For a complete list of CLI options and features, see the [CLI reference](/en/cli
 
 For multi-turn conversations, you can resume conversations or continue from the most recent session:
 
-```bash  theme={null}
+```bash theme={null}
 # Continue the most recent conversation
 claude --continue "Now refactor this for better performance"
 
@@ -54,7 +54,7 @@ claude --resume 550e8400-e29b-41d4-a716-446655440000 "Fix all linting issues" --
 
 ### Text Output (Default)
 
-```bash  theme={null}
+```bash theme={null}
 claude -p "Explain file src/components/Header.tsx"
 # Output: This is a React component showing...
 ```
@@ -63,13 +63,13 @@ claude -p "Explain file src/components/Header.tsx"
 
 Returns structured data including metadata:
 
-```bash  theme={null}
+```bash theme={null}
 claude -p "How does the data layer work?" --output-format json
 ```
 
 Response format:
 
-```json  theme={null}
+```json theme={null}
 {
   "type": "result",
   "subtype": "success",
@@ -87,7 +87,7 @@ Response format:
 
 Streams each message as it is received:
 
-```bash  theme={null}
+```bash theme={null}
 claude -p "Build an application" --output-format stream-json
 ```
 
@@ -97,7 +97,7 @@ Each conversation begins with an initial `init` system message, followed by a li
 
 ### Text Input (Default)
 
-```bash  theme={null}
+```bash theme={null}
 # Direct argument
 claude -p "Explain this code"
 
@@ -111,7 +111,7 @@ A stream of messages provided via `stdin` where each message represents a user t
 
 Each message is a JSON 'User message' object, following the same format as the output message schema. Messages are formatted using the [jsonl](https://jsonlines.org/) format where each line of input is a complete JSON object. Streaming JSON input requires `-p` and `--output-format stream-json`.
 
-```bash  theme={null}
+```bash theme={null}
 echo '{"type":"user","message":{"role":"user","content":[{"type":"text","text":"Explain this code"}]}}' | claude -p --output-format=stream-json --input-format=stream-json --verbose
 ```
 
@@ -119,7 +119,7 @@ echo '{"type":"user","message":{"role":"user","content":[{"type":"text","text":"
 
 ### SRE Incident Response Bot
 
-```bash  theme={null}
+```bash theme={null}
 #!/bin/bash
 
 # Automated incident response agent
@@ -140,7 +140,7 @@ investigate_incident "Payment API returning 500 errors" "high"
 
 ### Automated Security Review
 
-```bash  theme={null}
+```bash theme={null}
 # Security audit agent for pull requests
 audit_pr() {
     local pr_number="$1"
@@ -157,7 +157,7 @@ audit_pr 123 > security-report.json
 
 ### Multi-turn Legal Assistant
 
-```bash  theme={null}
+```bash theme={null}
 # Legal document review with session persistence
 session_id=$(claude -p "Start legal review session" --output-format json | jq -r '.session_id')
 
@@ -169,18 +169,18 @@ claude -p --resume "$session_id" "Generate executive summary of risks"
 
 ## Best Practices
 
-* **Use JSON output format** for programmatic parsing of responses:
+- **Use JSON output format** for programmatic parsing of responses:
 
-  ```bash  theme={null}
+  ```bash theme={null}
   # Parse JSON response with jq
   result=$(claude -p "Generate code" --output-format json)
   code=$(echo "$result" | jq -r '.result')
   cost=$(echo "$result" | jq -r '.cost_usd')
   ```
 
-* **Handle errors gracefully** - check exit codes and stderr:
+- **Handle errors gracefully** - check exit codes and stderr:
 
-  ```bash  theme={null}
+  ```bash theme={null}
   if ! claude -p "$prompt" 2>error.log; then
       echo "Error occurred:" >&2
       cat error.log >&2
@@ -188,21 +188,20 @@ claude -p --resume "$session_id" "Generate executive summary of risks"
   fi
   ```
 
-* **Use session management** for maintaining context in multi-turn conversations
+- **Use session management** for maintaining context in multi-turn conversations
 
-* **Consider timeouts** for long-running operations:
+- **Consider timeouts** for long-running operations:
 
-  ```bash  theme={null}
+  ```bash theme={null}
   timeout 300 claude -p "$complex_prompt" || echo "Timed out after 5 minutes"
   ```
 
-* **Respect rate limits** when making multiple requests by adding delays between calls
+- **Respect rate limits** when making multiple requests by adding delays between calls
 
 ## Related Resources
 
-* [CLI usage and controls](/en/cli-reference) - Complete CLI documentation
-* [Common workflows](/en/common-workflows) - Step-by-step guides for common use cases
-
+- [CLI usage and controls](/en/cli-reference) - Complete CLI documentation
+- [Common workflows](/en/common-workflows) - Step-by-step guides for common use cases
 
 ---
 

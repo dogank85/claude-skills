@@ -1,5 +1,5 @@
 {
-    "name": "documentation-manager",
-    "version": "1.0.0",
-    "description": "Automates documentation maintenance (Changelog, ADRs, Status) for the project."
+  "name": "documentation-manager",
+  "version": "1.0.0",
+  "description": "Automates documentation maintenance (Changelog, ADRs, Status) for the project."
 }

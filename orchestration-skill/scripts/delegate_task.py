@@ -96,7 +96,7 @@ def main():
     # Determine model/flags based on effort level
     gemini_model = "gemini-3-pro-preview"
     claude_model = "sonnet-4.5"
-    codex_model = "gpt-5.1-codex-max"
+    codex_model = "gpt-5.2"
     
     if args.effort == "high":
         # Gemini is already on pro-preview by default, maybe we keep it or switch to Ultra if that existed, 
@@ -187,8 +187,12 @@ def main():
     
     with open(status_file, 'w') as f:
         json.dump(status_data, f)
-    
+
     print(json.dumps(status_data, indent=2))
+
+    # Remind orchestrator about context chaining if not used
+    if not args.parent_task_id:
+        print("\n💡 Tip: Use --parent_task_id <id> to chain context from a related task.", file=sys.stderr)
 
 if __name__ == "__main__":
     main()
