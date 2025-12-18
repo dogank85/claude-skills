@@ -1,0 +1,17 @@
+{
+    "name": "gemini-image-gen",
+    "version": "1.0.0",
+    "description": "State-of-the-art image generation and editing using Gemini 2.5 Flash and Gemini 3 Pro models.",
+    "author": {
+        "name": "Dogan Karakaya"
+    },
+    "commands": [],
+    "tools": [
+        "scripts/generate_image.py"
+    ],
+    "permissions": {
+        "allow_shell": true,
+        "allow_file_read": true,
+        "allow_file_write": true
+    }
+}
