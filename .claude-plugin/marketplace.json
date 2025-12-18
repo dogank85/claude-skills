@@ -33,6 +33,12 @@
             "source": "./documentation-manager",
             "description": "Automates documentation maintenance (Changelog, ADRs, Status) for the project.",
             "version": "1.0.0"
+        },
+        {
+            "name": "gemini-image-gen",
+            "source": "./gemini-image-gen",
+            "description": "State-of-the-art image generation and editing using Gemini 2.5 Flash and Gemini 3 Pro models.",
+            "version": "1.0.0"
         }
     ]
 }
