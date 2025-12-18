@@ -32,7 +32,7 @@ python3 scripts/delegate_task.py --agent claude --prompt "Implement the user pro
 - **Detailed Audit**: Generate a deep report in `logs/results/` using `--report`.
 
 **Agent Behaviors:**
-- **Gemini**: Defaults to `auto` for speed. Use `--effort high` for Pro capabilities.
+- **Gemini**: Defaults to `gemini-3-flash-preview` for speed. Use `--effort high` for `gemini-3-pro-preview`.
 - **Claude**: Defaults to `sonnet-4.5`.
 - **Codex**: Defaults to `gpt-5.2` with medium effort.
 
