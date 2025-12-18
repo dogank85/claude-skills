@@ -5,12 +5,14 @@
   "author": {
     "name": "Dogan Karakaya"
   },
-  "commands": ["./commands/delegate.md", "./commands/status.md"],
+  "commands": [],
   "tools": [
     "scripts/delegate_task.py",
     "scripts/check_status.py",
     "scripts/finish_task.py",
-    "scripts/list_active_tasks.py"
+    "scripts/list_active_tasks.py",
+    "scripts/cancel_task.py",
+    "scripts/status_vis.py"
   ],
   "permissions": {
     "allow_shell": true,

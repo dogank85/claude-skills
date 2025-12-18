@@ -94,15 +94,12 @@ def main():
     agent_cmd = ""
     
     # Determine model/flags based on effort level
-    gemini_model = "gemini-3-pro-preview"
+    gemini_model = "auto"
     claude_model = "sonnet-4.5"
     codex_model = "gpt-5.2"
     
     if args.effort == "high":
-        # Gemini is already on pro-preview by default, maybe we keep it or switch to Ultra if that existed, 
-        # but user just said default should be pro-preview. 
-        # For now, sticking to what user asked: default is pro-preview.
-        # If high effort is asked for Claude, we switch to Sonnet.
+        gemini_model = "gemini-3-pro-preview"
         claude_model = "sonnet"
 
     if args.agent == "claude":

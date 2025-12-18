@@ -6,85 +6,63 @@ version: 1.0.0
 
 # Orchestration Skill
 
-This skill enables the orchestration of other AI agents (Claude Code, Gemini CLI, Codex CLI) in a headless, asynchronous manner. It is designed to prevent context bloat in the orchestrator by strictly avoiding the consumption of background agent logs.
+Use this skill to orchestrate headless agents (Claude, Gemini, Codex) using an asynchronous "Fire and Forget" pattern. This approach prevents context bloat in the primary orchestrator by isolating background work and relying on lightweight status monitoring.
 
-## Core Philosophy: "Fire and Forget"
+## Core Patterns
 
-1.  **Delegate**: The orchestrator launches a task and immediately releases the connection.
-2.  **Isolate**: The worker agent runs in its own process, writing to its own log files.
-3.  **Check**: The orchestrator periodically checks a lightweight status file, never the full logs.
+### "Fire and Forget" Delegation
+1.  **Launch**: Delegate a task to a background worker and release the connection immediately.
+2.  **Isolate**: Force workers to run in separate processes and write to unique log paths.
+3.  **Monitor**: Periodically check the structured JSON status files rather than raw logs.
 
-## Tools
+## Tool Reference
 
 ### `delegate_task`
+Initiate a new headless task with a background agent.
 
-Launches a new task with a specified agent.
-
-**Usage:**
-
+**Basic Usage:**
 ```bash
-python3 scripts/delegate_task.py --agent claude --prompt "Refactor the login component"
-# To resume context from a previous task:
-python3 scripts/delegate_task.py --agent claude --prompt "Fix the bugs" --parent_task_id 12345
-# To run in a sandbox:
-python3 scripts/delegate_task.py --agent claude --prompt "Run tests" --sandbox
-# To run in a sandbox:
-python3 scripts/delegate_task.py --agent claude --prompt "Run tests" --sandbox
-# To trigger high reasoning mode (Gemini 3 Pro / Claude Sonnet / Codex High Effort):
-python3 scripts/delegate_task.py --agent gemini --prompt "Debug race condition" --effort high
-# To generate a detailed report:
-python3 scripts/delegate_task.py --agent claude --prompt "Audit security" --report
+python3 scripts/delegate_task.py --agent claude --prompt "Implement the user profile API"
 ```
 
-**Returns:**
-A JSON object containing the `task_id` and `pid`.
+**Advanced Patterns:**
+- **Resume Session**: Chain context by providing a `--parent_task_id <ID>`.
+- **Sandbox Mode**: Isolate execution using `--sandbox`.
+- **High Reasoning**: Use `--effort high` to escalate to premium models (e.g., `gemini-3-pro-preview`).
+- **Detailed Audit**: Generate a deep report in `logs/results/` using `--report`.
+
+**Agent Behaviors:**
+- **Gemini**: Defaults to `auto` for speed. Use `--effort high` for Pro capabilities.
+- **Claude**: Defaults to `sonnet-4.5`.
+- **Codex**: Defaults to `gpt-5.2` with medium effort.
 
 ### `check_status`
-
-Checks the status of a specific task.
-
-**Usage:**
-
+Retrieve the current state and results of a specific task.
 ```bash
 python3 scripts/check_status.py --task_id <TASK_ID>
 ```
 
-**Returns:**
-A JSON object with `status` ("RUNNING", "COMPLETED", "FAILED") and `summary_file` path if complete.
+### `cancel_task`
+Terminate a running task and its associated processes.
+```bash
+python3 scripts/cancel_task.py --task_id <TASK_ID>
+```
 
 ### `list_active_tasks`
-
-Lists all currently running tasks.
-
-**Usage:**
-
+View all currently running orchestration tasks.
 ```bash
 python3 scripts/list_active_tasks.py
 ```
 
-## Directory Structure
+### `status_vis`
+Render a visual timeline or summary table of recent task activity.
+```bash
+python3 scripts/status_vis.py
+```
 
-- `./logs/orchestration/`: Stores all task logs and status files (relative to PROJECT ROOT).
-  - `./logs/orchestration/raw/<task_id>.log`: Full stdout/stderr of the agent.
-  - `./logs/orchestration/status/<task_id>.status.json`: Structured status file.
-  - `./logs/orchestration/status/<task_id>.pid`: File containing the process ID (PID) of the agent task.
-  - `./logs/orchestration/results/<task_id>.summary.md`: Concise summary written by the agent.
-  - `./logs/orchestration/results/<task_id>_report.md`: Detailed report (if requested).
+## Operational Rules
 
-## Workflow Example
-
-1.  **Orchestrator** decides to implement a feature.
-2.  **Orchestrator** calls `delegate_task.py`.
-3.  **Orchestrator** receives `task_id: "12345"`.
-4.  **Orchestrator** continues with other work or waits.
-5.  **Orchestrator** calls `check_status.py --task_id 12345`.
-6.  **Orchestrator** receives `status: "COMPLETED"`.
-7.  **Orchestrator** reads `logs/12345.summary.md` to verify the result.
-
-## Rules of Engagement
-
-To maintain a clean and predictable environment, Orchestrators must adhere to the following rules:
-
-1.  **NO Root File Creation**: Never instruct an agent to create a report or document in the project root (e.g., `PROJECT_STATUS.md`).
-2.  **Targeted Output**: Always instruct agents to write their outputs to the pre-assigned `logs/results/<task_id>.summary.md` or `logs/results/<task_id>_report.md` path.
-3.  **Containment**: Agents should only write to files if explicitly necessary for the task (e.g., refactoring code). Documentation and reports belong in `logs/results/`.
+1.  **Maintain Containment**: Never instruct agents to write files in the project root.
+2.  **Redirect Output**: Enforce writing of summaries to `logs/results/<task_id>.summary.md`.
+3.  **Asychronous-Only**: Avoid blocking the orchestrator while waiting for task completion.
+4.  **Security**: Use `--sandbox` when executing untrusted or experimental code generation.
