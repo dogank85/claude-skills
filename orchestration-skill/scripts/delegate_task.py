@@ -96,7 +96,7 @@ def main():
     # Determine model/flags based on effort level
     gemini_model = "gemini-3-flash-preview"
     claude_model = "sonnet-4.5"
-    codex_model = "gpt-5.2"
+    codex_model = "GPT-5.2-Codex"
     
     if args.effort == "high":
         gemini_model = "gemini-3-pro-preview"
