@@ -84,7 +84,7 @@ def main():
         "3. The summary file should be in Markdown format.\n"
         "4. Do not ask for confirmation. Just do it.\n"
         f"{report_instruction}"
-        "5. DO NOT create any other files. You are ONLY allowed to write to the summary file (and report file if specified). Do NOT create files in the project root.\n"
+        "5. You can edit existing files in the codebase as needed to complete the task. Write your summary to the summary file when done. Do NOT create new files in the project root.\n"
     )
     
     # Securely quote the prompt for shell usage
@@ -96,7 +96,7 @@ def main():
     # Determine model/flags based on effort level
     gemini_model = "gemini-3-flash-preview"
     claude_model = "sonnet-4.5"
-    codex_model = "GPT-5.2-Codex"
+    codex_model = "gpt-5.2-codex"
     
     if args.effort == "high":
         gemini_model = "gemini-3-pro-preview"

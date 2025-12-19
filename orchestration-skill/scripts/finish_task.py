@@ -40,15 +40,12 @@ def extract_session_id(log_path, agent):
         with open(log_path, 'r', errors='replace') as f:
             content = f.read()
             
-        # Strategy 1: Look for the last JSON object containing "session_id"
-        # This regex looks for { ... "session_id": "..." ... } allowing for nested braces is hard with regex,
-        # so we look for a simple pattern first.
-        
-        # Pattern: "session_id": "..."
+        # Strategy 1: Look for the last JSON object containing "session_id", "conversation_id", etc.
         # We want the LAST occurrence.
-        matches = list(re.finditer(r'"session_id"\s*:\s*"([^"]+)"', content))
+        # Captures key in group 1, value in group 2
+        matches = list(re.finditer(r'"(session_id|conversation_id|sessionId|thread_id)"\s*:\s*"([^"]+)"', content))
         if matches:
-            return matches[-1].group(1)
+            return matches[-1].group(2)
             
         # Strategy 2: If finding the key directly failed (maybe it's not quoted standardly?), try parsing lines as JSON
         # Codex often outputs JSONL
@@ -64,8 +61,11 @@ def extract_session_id(log_path, agent):
                 if start != -1 and end != -1 and end > start:
                     potential_json = line[start:end+1]
                     data = json.loads(potential_json)
-                    if "session_id" in data:
-                        return data["session_id"]
+                    
+                    # Check common keys
+                    for key in ["session_id", "conversation_id", "sessionId", "thread_id"]:
+                        if key in data:
+                            return data[key]
             except:
                 continue
                 
