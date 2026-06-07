@@ -2,77 +2,8 @@ import argparse
 import json
 import os
 import re
-import sys
 import subprocess
-
-def send_notification(title, message, sound="Glass"):
-    """
-    Sends a macOS desktop notification and plays a sound using afplay.
-    """
-    try:
-        # 1. Show Visual Notification
-        safe_title = title.replace('"', '\\"')
-        safe_message = message.replace('"', '\\"')
-        
-        # We explicitly remove 'sound name' from osascript because we will play it manually
-        apple_script = f'display notification "{safe_message}" with title "{safe_title}"'
-        subprocess.run(["osascript", "-e", apple_script], check=False, capture_output=True)
-        
-        # 2. Play Sound Explicitly
-        # Verify sound exists, fallback to Glass, fallback to Ping
-        sound_path = f"/System/Library/Sounds/{sound}.aiff"
-        if not os.path.exists(sound_path):
-            sound_path = "/System/Library/Sounds/Glass.aiff"
-            
-        subprocess.Popen(["afplay", sound_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            
-    except Exception as e:
-        print(f"Notification failed: {e}", file=sys.stderr)
-
-def extract_session_id(log_path, agent):
-    """
-    Robustly extracts session_id from a log file that might contain mixed output.
-    """
-    if not os.path.exists(log_path):
-        return None
-        
-    try:
-        with open(log_path, 'r', errors='replace') as f:
-            content = f.read()
-            
-        # Strategy 1: Look for the last JSON object containing "session_id", "conversation_id", etc.
-        # We want the LAST occurrence.
-        # Captures key in group 1, value in group 2
-        matches = list(re.finditer(r'"(session_id|conversation_id|sessionId|thread_id)"\s*:\s*"([^"]+)"', content))
-        if matches:
-            return matches[-1].group(2)
-            
-        # Strategy 2: If finding the key directly failed (maybe it's not quoted standardly?), try parsing lines as JSON
-        # Codex often outputs JSONL
-        lines = content.splitlines()
-        for line in reversed(lines):
-            line = line.strip()
-            if not line: continue
-            try:
-                # Try to find a JSON object in the line (it might be surrounded by other text like "Output: {...}")
-                # We find the first '{' and last '}'
-                start = line.find('{')
-                end = line.rfind('}')
-                if start != -1 and end != -1 and end > start:
-                    potential_json = line[start:end+1]
-                    data = json.loads(potential_json)
-                    
-                    # Check common keys
-                    for key in ["session_id", "conversation_id", "sessionId", "thread_id"]:
-                        if key in data:
-                            return data[key]
-            except:
-                continue
-                
-    except Exception as e:
-        print(f"Error reading log file {log_path}: {e}", file=sys.stderr)
-        
-    return None
+import sys
 
 def main():
     parser = argparse.ArgumentParser(description="Finalize a delegated task.")
@@ -81,11 +12,28 @@ def main():
     parser.add_argument("--status_file", required=True, help="Path to the status file.")
     parser.add_argument("--summary_file", required=True, help="Path to the summary file.")
     parser.add_argument("--agent", required=True, help="The agent used.")
-    parser.add_argument("--pid_file", help="Path to the pid file (optional, used for cleanup if needed).")
+    parser.add_argument("--exit_code", type=int, default=0, help="Exit code from the agent command.")
+    parser.add_argument("--timeout", type=int, default=None, help="Configured timeout (seconds), used to label timeout kills.")
     args = parser.parse_args()
 
-    # 1. Extract Session ID Robustly
-    session_id = extract_session_id(args.log_file, args.agent)
+    # Exit codes that mean the watchdog (or GNU timeout) killed a hung agent:
+    # 143 = 128 + SIGTERM (our kill_tree), 124 = GNU `timeout` convention.
+    timed_out = args.exit_code in (143, 124)
+
+    # 1. Extract Session ID
+    # The agent runs with stderr merged into the log (`> log 2>&1`), so the log
+    # may contain warnings before/around the JSON. A regex scan is robust to that
+    # noise as well as multi-line/pretty-printed JSON and codex's JSONL stream —
+    # and works uniformly for all three agents without a jq dependency.
+    session_id = None
+    try:
+        with open(args.log_file, 'r') as f:
+            log_content = f.read()
+        m = re.search(r'"session_id"\s*:\s*"([^"]+)"', log_content)
+        if m:
+            session_id = m.group(1)
+    except Exception as e:
+        print(f"Error extracting session ID: {e}", file=sys.stderr)
 
     # 2. Update Status File
     try:
@@ -93,11 +41,16 @@ def main():
             with open(args.status_file, 'r') as f:
                 data = json.load(f)
             
-            data["status"] = "COMPLETED"
-            # We don't unset the PID here because it's historical record, 
-            # but arguably the process is gone now.
-            
-            if session_id:
+            if timed_out:
+                data["status"] = "FAILED"
+                limit = f" after {args.timeout}s" if args.timeout else ""
+                data["error"] = f"Agent killed (timeout{limit})."
+            elif args.exit_code != 0:
+                data["status"] = "FAILED"
+                data["error"] = f"Agent exited with code {args.exit_code}"
+            else:
+                data["status"] = "COMPLETED"
+            if session_id and session_id != "null":
                 data["session_id"] = session_id
             
             with open(args.status_file, 'w') as f:
@@ -108,41 +61,105 @@ def main():
         print(f"Error updating status file: {e}", file=sys.stderr)
 
     # 3. Summary Fallback Logic
+    summary_content = ""
     try:
         if os.path.exists(args.summary_file):
             if os.path.getsize(args.summary_file) == 0:
                 # Summary is empty, perform fallback
                 with open(args.summary_file, 'w') as f:
                     f.write("WARNING: Agent failed to write summary. Extracted from log:\n\n")
-                    f.write("```\n")
-                    
-                # Append tail of log file (using python to avoid shell injection risk)
+                    f.write("```json\n")
+                
+                # Append tail of log file
                 try:
-                    with open(args.log_file, 'r', errors='replace') as lf:
+                    with open(args.log_file, 'r') as lf:
                         lines = lf.readlines()
-                        tail = lines[-20:] if len(lines) > 20 else lines
-                        
-                    with open(args.summary_file, 'a') as f:
-                        f.writelines(tail)
-                except Exception as e:
-                     with open(args.summary_file, 'a') as f:
-                        f.write(f"Could not read log file: {e}\n")
+                        tail_lines = lines[-20:] if len(lines) > 20 else lines
+                    with open(args.summary_file, 'a') as sf:
+                        sf.writelines(tail_lines)
+                except IOError:
+                    pass
                 
                 with open(args.summary_file, 'a') as f:
                     f.write("\n```\n")
+            
+            # Read summary for notification
+            with open(args.summary_file, 'r') as f:
+                summary_content = f.read()
     except Exception as e:
         print(f"Error in summary fallback: {e}", file=sys.stderr)
 
-    # 4. Notify User
+    # 4. Trigger macOS Notification
     try:
-        # Determine status for notification
-        status_msg = "Task Completed"
-        sound = "Glass"
+        # Agent icons and sounds matching status_vis.py
+        agent_config = {
+            "claude": {"icon": "🤖", "sound": "Tink"},
+            "gemini": {"icon": "⚡", "sound": "Hero"},
+            "codex": {"icon": "🔶", "sound": "Glass"},
+            "antigravity": {"icon": "🪐", "sound": "Submarine"}
+        }
+        config = agent_config.get(args.agent, {"icon": "🔶", "sound": "Pop"})
+        icon = config["icon"]
+        sound = config["sound"]
+        agent_display = args.agent.capitalize()
         
-        # You could refine this based on whether the log has error keywords, but for now simple is good.
-        send_notification("Orchestration Skill", f"{status_msg}: {args.task_id}", sound)
+        status_word = "Failed" if args.exit_code != 0 else "Complete"
+        project_name = os.environ.get("ORCHESTRATION_PROJECT_NAME", os.path.basename(os.getcwd()))
+        title = f"{project_name}: {icon} {agent_display} Task {args.task_id} {status_word}"
+        
+        # Extract first line or headline for preview
+        preview = summary_content.strip().split('\n')[0] if summary_content else "Task finished successfully."
+        if len(preview) > 100:
+            preview = preview[:97] + "..."
+            
+        # Escape for AppleScript
+        preview = preview.replace('\\', '\\\\').replace('"', '\\"')
+        cmd = f'osascript -e \'display notification "{preview}" with title "{title}" sound name "{sound}"\''
+        subprocess.run(cmd, shell=True)
     except Exception as e:
-        print(f"Notification error: {e}", file=sys.stderr)
+        print(f"Error sending notification: {e}", file=sys.stderr)
+
+    # 5. Push Notification via ntfy.sh (iPhone) — requires ORCHESTRATION_NTFY_TOPIC env var
+    ntfy_topic = os.environ.get("ORCHESTRATION_NTFY_TOPIC")
+    if ntfy_topic:
+        try:
+            ntfy_title = f"{icon} {agent_display} Task {args.task_id}"
+            ntfy_body = preview if summary_content else "Task finished successfully."
+            subprocess.run([
+                "curl", "-s",
+                "-H", f"Title: {ntfy_title}",
+                "-H", "Priority: default",
+                "-H", "Tags: white_check_mark",
+                "-d", ntfy_body,
+                f"https://ntfy.sh/{ntfy_topic}"
+            ], capture_output=True, timeout=10)
+        except Exception as e:
+            print(f"Error sending push notification: {e}", file=sys.stderr)
+
+    # 6. Push to Claude Code channel (localhost:9999)
+    try:
+        status_word = "SUCCESS" if args.exit_code == 0 else "FAILED"
+        channel_payload = json.dumps({
+            "type": "task-complete",
+            "source": "orchestration",
+            "content": f"Agent '{args.agent}' finished task '{args.task_id}' — {status_word}.\n{preview}",
+            "meta": {
+                "task_id": args.task_id,
+                "agent": args.agent,
+                "exit_code": str(args.exit_code),
+                "summary_file": args.summary_file,
+                "report_file": args.summary_file.replace('.summary.md', '_report.md')
+            }
+        })
+        subprocess.run(
+            ["curl", "-s", "-X", "POST",
+             "-H", "Content-Type: application/json",
+             "-d", channel_payload,
+             f"http://127.0.0.1:{os.environ.get('ORCHESTRATION_CHANNEL_PORT', '9999')}/push"],
+            timeout=3, capture_output=True
+        )
+    except Exception:
+        pass  # Channel may not be running; silent fallback
 
 if __name__ == "__main__":
     main()

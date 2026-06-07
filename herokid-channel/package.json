@@ -1,0 +1,9 @@
+{
+  "name": "herokid-channel",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "channel.mjs",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "latest"
+  }
+}

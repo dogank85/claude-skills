@@ -3,15 +3,28 @@ import json
 import os
 import sys
 
+
+def resolve_pid(data):
+    pid = data.get("pid")
+    if pid is not None:
+        return pid
+    pid_file = data.get("pid_file")
+    if pid_file and os.path.exists(pid_file):
+        try:
+            with open(pid_file, 'r') as f:
+                return int(f.read().strip())
+        except (ValueError, IOError):
+            pass
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(description="Check the status of a delegated task.")
     parser.add_argument("--task_id", required=True, help="The ID of the task to check.")
-    
+
     args = parser.parse_args()
-    
-    # Locate logs directory relative to Current Working Directory
-    log_dir = os.path.join(os.getcwd(), "logs", "orchestration")
-    status_file = os.path.join(log_dir, "status", f"{args.task_id}.status.json")
+
+    status_file = os.path.join("logs", "orchestration", "status", f"{args.task_id}.status.json")
     
     if not os.path.exists(status_file):
         print(json.dumps({"error": "Task not found"}))
@@ -23,23 +36,7 @@ def main():
             
         # Check for crash (PID not running but status is RUNNING)
         if data.get("status") == "RUNNING":
-            pid = None
-            
-            # 1. Try to read from reliable pid_file
-            pid_file = data.get("pid_file")
-            if pid_file and os.path.exists(pid_file):
-                try:
-                    with open(pid_file, 'r') as pf:
-                        pid_str = pf.read().strip()
-                        if pid_str.isdigit():
-                            pid = int(pid_str)
-                except:
-                    pass
-            
-            # 2. Fallback to unreliable status.pid (legacy or race condition where pid_file not written yet)
-            if pid is None:
-                pid = data.get("pid")
-
+            pid = resolve_pid(data)
             if pid:
                 try:
                     # Signal 0 checks if process exists
@@ -50,10 +47,6 @@ def main():
                     # Update the file to reflect reality
                     with open(status_file, 'w') as f:
                         json.dump(data, f)
-            else:
-                 # If we have no PID but status is RUNNING, it might be starting up or in a bad state.
-                 # We'll leave it as RUNNING but warn.
-                 data["warning"] = "Task is RUNNING but PID could not be determined."
         
         # Check for summary file warnings
         if data.get("status") == "COMPLETED":

@@ -52,10 +52,10 @@ mcp.excluded (array of strings): A list of MCP server names to exclude. Servers 
 Example:
 
 {
-"mcp": {
-"allowed": ["my-trusted-server"],
-"excluded": ["experimental-server"]
-}
+  "mcp": {
+    "allowed": ["my-trusted-server"],
+    "excluded": ["experimental-server"]
+  }
 }
 
 Server-Specific Configuration (mcpServers)
@@ -65,18 +65,18 @@ Configuration Structure
 Add an mcpServers object to your settings.json file:
 
 { ...file contains other config objects
-"mcpServers": {
-"serverName": {
-"command": "path/to/server",
-"args": ["--arg1", "value1"],
-"env": {
-"API_KEY": "$MY_API_TOKEN"
-},
-"cwd": "./server-directory",
-"timeout": 30000,
-"trust": false
-}
-}
+  "mcpServers": {
+    "serverName": {
+      "command": "path/to/server",
+      "args": ["--arg1", "value1"],
+      "env": {
+        "API_KEY": "$MY_API_TOKEN"
+      },
+      "cwd": "./server-directory",
+      "timeout": 30000,
+      "trust": false
+    }
+  }
 }
 
 Configuration Properties
@@ -104,11 +104,11 @@ Automatic OAuth Discovery
 For servers that support OAuth discovery, you can omit the OAuth configuration and let the CLI discover it automatically:
 
 {
-"mcpServers": {
-"discoveredServer": {
-"url": "https://api.example.com/sse"
-}
-}
+  "mcpServers": {
+    "discoveredServer": {
+      "url": "https://api.example.com/sse"
+    }
+  }
 }
 
 The CLI will automatically:
@@ -140,17 +140,13 @@ Managing OAuth Authentication
 Use the /mcp auth command to manage OAuth authentication:
 
 Terminal window
-
 # List servers requiring authentication
-
 /mcp auth
 
 # Authenticate with a specific server
-
 /mcp auth serverName
 
 # Re-authenticate if tokens expire
-
 /mcp auth serverName
 
 OAuth Configuration Properties
@@ -179,15 +175,15 @@ google_credentials: The CLI will use the Google Application Default Credentials 
 service_account_impersonation: The CLI will impersonate a Google Cloud Service Account to authenticate with the server. This is useful for accessing IAP-protected services (this was specifically designed for Cloud Run services).
 Google Credentials
 {
-"mcpServers": {
-"googleCloudServer": {
-"httpUrl": "https://my-gcp-service.run.app/mcp",
-"authProviderType": "google_credentials",
-"oauth": {
-"scopes": ["https://www.googleapis.com/auth/userinfo.email"]
-}
-}
-}
+  "mcpServers": {
+    "googleCloudServer": {
+      "httpUrl": "https://my-gcp-service.run.app/mcp",
+      "authProviderType": "google_credentials",
+      "oauth": {
+        "scopes": ["https://www.googleapis.com/auth/userinfo.email"]
+      }
+    }
+  }
 }
 
 Service Account Impersonation
@@ -207,109 +203,109 @@ Enable the IAM Credentials API for your project.
 Example Configurations
 Python MCP Server (Stdio)
 {
-"mcpServers": {
-"pythonTools": {
-"command": "python",
-"args": ["-m", "my_mcp_server", "--port", "8080"],
-"cwd": "./mcp-servers/python",
-"env": {
-"DATABASE_URL": "$DB_CONNECTION_STRING",
+  "mcpServers": {
+    "pythonTools": {
+      "command": "python",
+      "args": ["-m", "my_mcp_server", "--port", "8080"],
+      "cwd": "./mcp-servers/python",
+      "env": {
+        "DATABASE_URL": "$DB_CONNECTION_STRING",
         "API_KEY": "${EXTERNAL_API_KEY}"
-},
-"timeout": 15000
-}
-}
+      },
+      "timeout": 15000
+    }
+  }
 }
 
 Node.js MCP Server (Stdio)
 {
-"mcpServers": {
-"nodeServer": {
-"command": "node",
-"args": ["dist/server.js", "--verbose"],
-"cwd": "./mcp-servers/node",
-"trust": true
-}
-}
+  "mcpServers": {
+    "nodeServer": {
+      "command": "node",
+      "args": ["dist/server.js", "--verbose"],
+      "cwd": "./mcp-servers/node",
+      "trust": true
+    }
+  }
 }
 
 Docker-based MCP Server
 {
-"mcpServers": {
-"dockerizedServer": {
-"command": "docker",
-"args": [
-"run",
-"-i",
-"--rm",
-"-e",
-"API_KEY",
-"-v",
-"${PWD}:/workspace",
-"my-mcp-server:latest"
-],
-"env": {
-"API_KEY": "$EXTERNAL_SERVICE_TOKEN"
-}
-}
-}
+  "mcpServers": {
+    "dockerizedServer": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "API_KEY",
+        "-v",
+        "${PWD}:/workspace",
+        "my-mcp-server:latest"
+      ],
+      "env": {
+        "API_KEY": "$EXTERNAL_SERVICE_TOKEN"
+      }
+    }
+  }
 }
 
 HTTP-based MCP Server
 {
-"mcpServers": {
-"httpServer": {
-"httpUrl": "http://localhost:3000/mcp",
-"timeout": 5000
-}
-}
+  "mcpServers": {
+    "httpServer": {
+      "httpUrl": "http://localhost:3000/mcp",
+      "timeout": 5000
+    }
+  }
 }
 
 HTTP-based MCP Server with Custom Headers
 {
-"mcpServers": {
-"httpServerWithAuth": {
-"httpUrl": "http://localhost:3000/mcp",
-"headers": {
-"Authorization": "Bearer your-api-token",
-"X-Custom-Header": "custom-value",
-"Content-Type": "application/json"
-},
-"timeout": 5000
-}
-}
+  "mcpServers": {
+    "httpServerWithAuth": {
+      "httpUrl": "http://localhost:3000/mcp",
+      "headers": {
+        "Authorization": "Bearer your-api-token",
+        "X-Custom-Header": "custom-value",
+        "Content-Type": "application/json"
+      },
+      "timeout": 5000
+    }
+  }
 }
 
 MCP Server with Tool Filtering
 {
-"mcpServers": {
-"filteredServer": {
-"command": "python",
-"args": ["-m", "my_mcp_server"],
-"includeTools": ["safe_tool", "file_reader", "data_processor"],
-// "excludeTools": ["dangerous_tool", "file_deleter"],
-"timeout": 30000
-}
-}
+  "mcpServers": {
+    "filteredServer": {
+      "command": "python",
+      "args": ["-m", "my_mcp_server"],
+      "includeTools": ["safe_tool", "file_reader", "data_processor"],
+      // "excludeTools": ["dangerous_tool", "file_deleter"],
+      "timeout": 30000
+    }
+  }
 }
 
 SSE MCP Server with SA Impersonation
 {
-"mcpServers": {
-"myIapProtectedServer": {
-"url": "https://my-iap-service.run.app/sse",
-"authProviderType": "service_account_impersonation",
-"targetAudience": "YOUR_IAP_CLIENT_ID.apps.googleusercontent.com",
-"targetServiceAccount": "your-sa@your-project.iam.gserviceaccount.com"
-}
-}
+  "mcpServers": {
+    "myIapProtectedServer": {
+      "url": "https://my-iap-service.run.app/sse",
+      "authProviderType": "service_account_impersonation",
+      "targetAudience": "YOUR_IAP_CLIENT_ID.apps.googleusercontent.com",
+      "targetServiceAccount": "your-sa@your-project.iam.gserviceaccount.com"
+    }
+  }
 }
 
 Discovery Process Deep Dive
 When the Gemini CLI starts, it performs MCP server discovery through the following detailed process:
 
 1. Server Iteration and Connection
-   For each configured server in mcpServers:
+For each configured server in mcpServers:
 
 Status tracking begins: Server status is set to CONNECTING
 Transport selection: Based on configuration properties:
@@ -317,7 +313,8 @@ httpUrl → StreamableHTTPClientTransport
 url → SSEClientTransport
 command → StdioClientTransport
 Connection establishment: The MCP client attempts to connect with the configured timeout
-Error handling: Connection failures are logged and the server status is set to DISCONNECTED 2. Tool Discovery
+Error handling: Connection failures are logged and the server status is set to DISCONNECTED
+2. Tool Discovery
 Upon successful connection:
 
 Tool listing: The client calls the MCP server’s tool listing endpoint
@@ -325,18 +322,21 @@ Schema validation: Each tool’s function declaration is validated
 Tool filtering: Tools are filtered based on includeTools and excludeTools configuration
 Name sanitization: Tool names are cleaned to meet Gemini API requirements:
 Invalid characters (non-alphanumeric, underscore, dot, hyphen) are replaced with underscores
-Names longer than 63 characters are truncated with middle replacement (\_\_\_) 3. Conflict Resolution
+Names longer than 63 characters are truncated with middle replacement (___)
+3. Conflict Resolution
 When multiple servers expose tools with the same name:
 
 First registration wins: The first server to register a tool name gets the unprefixed name
-Automatic prefixing: Subsequent servers get prefixed names: serverName\_\_toolName
-Registry tracking: The tool registry maintains mappings between server names and their tools 4. Schema Processing
+Automatic prefixing: Subsequent servers get prefixed names: serverName__toolName
+Registry tracking: The tool registry maintains mappings between server names and their tools
+4. Schema Processing
 Tool parameter schemas undergo sanitization for Gemini API compatibility:
 
 $schema properties are removed
 additionalProperties are stripped
 anyOf with default have their default values removed (Vertex AI compatibility)
-Recursive processing applies to nested schemas 5. Connection Management
+Recursive processing applies to nested schemas
+5. Connection Management
 After discovery:
 
 Persistent connections: Servers that successfully register tools maintain their connections
@@ -346,15 +346,16 @@ Tool Execution Flow
 When the Gemini model decides to use an MCP tool, the following execution flow occurs:
 
 1. Tool Invocation
-   The model generates a FunctionCall with:
+The model generates a FunctionCall with:
 
 Tool name: The registered name (potentially prefixed)
-Arguments: JSON object matching the tool’s parameter schema 2. Confirmation Process
+Arguments: JSON object matching the tool’s parameter schema
+2. Confirmation Process
 Each DiscoveredMCPTool implements sophisticated confirmation logic:
 
 Trust-based Bypass
 if (this.trust) {
-return false; // No confirmation needed
+  return false; // No confirmation needed
 }
 
 Dynamic Allow-listing
@@ -368,7 +369,8 @@ When confirmation is required, users can choose:
 Proceed once: Execute this time only
 Always allow this tool: Add to tool-level allow-list
 Always allow this server: Add to server-level allow-list
-Cancel: Abort execution 3. Execution
+Cancel: Abort execution
+3. Execution
 Upon confirmation (or trust bypass):
 
 Parameter preparation: Arguments are validated against the tool’s schema
@@ -376,16 +378,16 @@ Parameter preparation: Arguments are validated against the tool’s schema
 MCP call: The underlying CallableTool invokes the server with:
 
 const functionCalls = [
-{
-name: this.serverToolName, // Original server tool name
-args: params,
-},
+  {
+    name: this.serverToolName, // Original server tool name
+    args: params,
+  },
 ];
 
 Response processing: Results are formatted for both LLM context and user display
 
 4. Response Handling
-   The execution result contains:
+The execution result contains:
 
 llmContent: Raw response parts for the language model’s context
 returnDisplay: Formatted output for user display (often JSON in markdown code blocks)
@@ -407,18 +409,18 @@ Example /mcp Output
 MCP Servers Status:
 
 📡 pythonTools (CONNECTED)
-Command: python -m my_mcp_server --port 8080
-Working Directory: ./mcp-servers/python
-Timeout: 15000ms
-Tools: calculate_sum, file_analyzer, data_processor
+  Command: python -m my_mcp_server --port 8080
+  Working Directory: ./mcp-servers/python
+  Timeout: 15000ms
+  Tools: calculate_sum, file_analyzer, data_processor
 
 🔌 nodeServer (DISCONNECTED)
-Command: node dist/server.js --verbose
-Error: Connection refused
+  Command: node dist/server.js --verbose
+  Error: Connection refused
 
 🐳 dockerizedServer (CONNECTED)
-Command: docker run -i --rm -e API_KEY my-mcp-server:latest
-Tools: docker**deploy, docker**status
+  Command: docker run -i --rm -e API_KEY my-mcp-server:latest
+  Tools: docker__deploy, docker__status
 
 Discovery State: COMPLETED
 
@@ -521,21 +523,21 @@ Example: Returning Text and an Image
 Here is an example of a valid JSON response from an MCP tool that returns both a text description and an image:
 
 {
-"content": [
-{
-"type": "text",
-"text": "Here is the logo you requested."
-},
-{
-"type": "image",
-"data": "BASE64_ENCODED_IMAGE_DATA_HERE",
-"mimeType": "image/png"
-},
-{
-"type": "text",
-"text": "The logo was created in 2025."
-}
-]
+  "content": [
+    {
+      "type": "text",
+      "text": "Here is the logo you requested."
+    },
+    {
+      "type": "image",
+      "data": "BASE64_ENCODED_IMAGE_DATA_HERE",
+      "mimeType": "image/png"
+    },
+    {
+      "type": "text",
+      "text": "The logo was created in 2025."
+    }
+  ]
 }
 
 When the Gemini CLI receives this response, it will:
@@ -556,28 +558,28 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 
 const server = new McpServer({
-name: 'prompt-server',
-version: '1.0.0',
+  name: 'prompt-server',
+  version: '1.0.0',
 });
 
 server.registerPrompt(
-'poem-writer',
-{
-title: 'Poem Writer',
-description: 'Write a nice haiku',
-argsSchema: { title: z.string(), mood: z.string().optional() },
-},
-({ title, mood }) => ({
-messages: [
-{
-role: 'user',
-content: {
-type: 'text',
-text: `Write a haiku${mood ? ` with the mood ${mood}` : ''} called ${title}. Note that a haiku is 5 syllables followed by 7 syllables followed by 5 syllables `,
-},
-},
-],
-}),
+  'poem-writer',
+  {
+    title: 'Poem Writer',
+    description: 'Write a nice haiku',
+    argsSchema: { title: z.string(), mood: z.string().optional() },
+  },
+  ({ title, mood }) => ({
+    messages: [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `Write a haiku${mood ? ` with the mood ${mood}` : ''} called ${title}. Note that a haiku is 5 syllables followed by 7 syllables followed by 5 syllables `,
+        },
+      },
+    ],
+  }),
 );
 
 const transport = new StdioServerTransport();
@@ -586,12 +588,12 @@ await server.connect(transport);
 This can be included in settings.json under mcpServers with:
 
 {
-"mcpServers": {
-"nodeServer": {
-"command": "node",
-"args": ["filename.ts"]
-}
-}
+  "mcpServers": {
+    "nodeServer": {
+      "command": "node",
+      "args": ["filename.ts"]
+    }
+  }
 }
 
 Invoking Prompts
@@ -636,51 +638,39 @@ Adding an stdio server
 This is the default transport for running local servers.
 
 Terminal window
-
 # Basic syntax
-
 gemini mcp add [options] <name> <command> [args...]
 
 # Example: Adding a local server
-
 gemini mcp add -e API_KEY=123 -e DEBUG=true my-stdio-server /path/to/server arg1 arg2 arg3
 
 # Example: Adding a local python server
-
 gemini mcp add python-server python server.py -- --server-arg my-value
 
 Adding an HTTP server
 This transport is for servers that use the streamable HTTP transport.
 
 Terminal window
-
 # Basic syntax
-
 gemini mcp add --transport http <name> <url>
 
 # Example: Adding an HTTP server
-
 gemini mcp add --transport http http-server https://api.example.com/mcp/
 
 # Example: Adding an HTTP server with an authentication header
-
 gemini mcp add --transport http --header "Authorization: Bearer abc123" secure-http https://api.example.com/mcp/
 
 Adding an SSE server
 This transport is for servers that use Server-Sent Events (SSE).
 
 Terminal window
-
 # Basic syntax
-
 gemini mcp add --transport sse <name> <url>
 
 # Example: Adding an SSE server
-
 gemini mcp add --transport sse sse-server https://api.example.com/sse/
 
 # Example: Adding an SSE server with an authentication header
-
 gemini mcp add --transport sse --header "Authorization: Bearer abc123" secure-sse https://api.example.com/sse/
 
 Listing Servers (gemini mcp list)

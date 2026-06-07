@@ -5,13 +5,5 @@
     "author": {
         "name": "Dogan Karakaya"
     },
-    "commands": [],
-    "tools": [
-        "scripts/generate_image.py"
-    ],
-    "permissions": {
-        "allow_shell": true,
-        "allow_file_read": true,
-        "allow_file_write": true
-    }
+    "commands": []
 }

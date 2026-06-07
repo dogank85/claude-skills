@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "herokid-channel": {
+      "command": "node",
+      "args": ["channel.mjs"],
+      "cwd": "/Users/dogankarakaya/.claude/plugins/local/herokid-channel"
+    }
+  }
+}

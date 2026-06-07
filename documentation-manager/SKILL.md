@@ -17,7 +17,7 @@ Appends a new entry to `CHANGELOG.md` under today's date.
 **Usage:**
 
 ```bash
-python3 scripts/log_change.py "Fixed the login bug" --type fix
+python3 .claude/skills/documentation-manager/scripts/log_change.py "Fixed the login bug" --type fix
 ```
 
 ### `create_adr`
@@ -27,7 +27,7 @@ Creates a new Architecture Decision Record (ADR) in `docs/adr/`.
 **Usage:**
 
 ```bash
-python3 scripts/new_adr.py "Move logs to project root"
+python3 .claude/skills/documentation-manager/scripts/new_adr.py "Move logs to project root"
 ```
 
 ### `update_status`
@@ -37,5 +37,5 @@ Updates the central `PROJECT_STATUS.md` file.
 **Usage:**
 
 ```bash
-python3 scripts/update_status.py "Focusing on mobile UI polish" --blockers "None"
+python3 .claude/skills/documentation-manager/scripts/update_status.py "Focusing on mobile UI polish" --blockers "None"
 ```

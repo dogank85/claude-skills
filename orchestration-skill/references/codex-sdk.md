@@ -39,7 +39,7 @@ Start a thread with Codex and run it with your prompt.
 const codex = new Codex();
 const thread = codex.startThread();
 const result = await thread.run(
-  "Make a plan to diagnose and fix the CI failures",
+  "Make a plan to diagnose and fix the CI failures"
 );
 
 console.log(result);

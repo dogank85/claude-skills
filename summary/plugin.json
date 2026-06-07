@@ -1,0 +1,9 @@
+{
+  "name": "summary",
+  "version": "1.0.0",
+  "description": "Generate structured conversation summaries for AI agent handoff and context preservation.",
+  "author": {
+    "name": "Dogan Karakaya"
+  },
+  "commands": ["commands/summary.md"]
+}

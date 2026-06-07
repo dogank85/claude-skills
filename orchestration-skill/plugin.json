@@ -1,22 +1,9 @@
 {
   "name": "orchestration-skill",
-  "version": "1.0.0",
-  "description": "Headless agent orchestration for Gemini, Claude, and Codex.",
+  "version": "1.2.0",
+  "description": "Headless agent orchestration for Gemini, Claude, Codex, and Antigravity.",
   "author": {
     "name": "Dogan Karakaya"
   },
-  "commands": [],
-  "tools": [
-    "scripts/delegate_task.py",
-    "scripts/check_status.py",
-    "scripts/finish_task.py",
-    "scripts/list_active_tasks.py",
-    "scripts/cancel_task.py",
-    "scripts/status_vis.py"
-  ],
-  "permissions": {
-    "allow_shell": true,
-    "allow_file_read": true,
-    "allow_file_write": true
-  }
+  "commands": []
 }

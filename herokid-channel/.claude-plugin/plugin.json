@@ -1,0 +1,5 @@
+{
+  "name": "herokid-channel",
+  "description": "General-purpose notification channel for Claude Code. Accepts HTTP POST on localhost:9999 from any local process and pushes messages into the active Claude Code session instantly.",
+  "version": "1.0.0"
+}

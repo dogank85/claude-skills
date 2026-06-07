@@ -5,30 +5,6 @@
     },
     "plugins": [
         {
-            "name": "orchestration-skill",
-            "source": "./orchestration-skill",
-            "description": "Headless agent orchestration for Gemini, Claude, and Codex.",
-            "version": "1.0.0"
-        },
-        {
-            "name": "slash-command-creator",
-            "source": "./slash-command-creator",
-            "description": "Helps you create custom slash commands.",
-            "version": "1.0.0"
-        },
-        {
-            "name": "mcp-manager",
-            "source": "./mcp-manager",
-            "description": "Manage MCP servers for Claude Code, Codex, and Gemini.",
-            "version": "1.0.0"
-        },
-        {
-            "name": "marketplace-sync",
-            "source": "./marketplace-sync",
-            "description": "Syncs skills from your current project to a local marketplace repository.",
-            "version": "1.0.0"
-        },
-        {
             "name": "documentation-manager",
             "source": "./documentation-manager",
             "description": "Automates documentation maintenance (Changelog, ADRs, Status) for the project.",
@@ -38,6 +14,42 @@
             "name": "gemini-image-gen",
             "source": "./gemini-image-gen",
             "description": "State-of-the-art image generation and editing using Gemini 2.5 Flash and Gemini 3 Pro models.",
+            "version": "1.0.0"
+        },
+        {
+            "name": "herokid-channel",
+            "source": "./herokid-channel",
+            "description": "General-purpose notification channel for Claude Code. Accepts HTTP POST on localhost:9999 from any local process and pushes messages into the active Claude Code session instantly.",
+            "version": "1.0.0"
+        },
+        {
+            "name": "marketplace-sync",
+            "source": "./marketplace-sync",
+            "description": "Syncs skills from your current project to a local marketplace repository.",
+            "version": "1.0.0"
+        },
+        {
+            "name": "mcp-manager",
+            "source": "./mcp-manager",
+            "description": "Manage MCP servers for Claude Code, Codex, and Gemini.",
+            "version": "1.0.0"
+        },
+        {
+            "name": "orchestration-skill",
+            "source": "./orchestration-skill",
+            "description": "Headless agent orchestration for Gemini, Claude, Codex, and Antigravity.",
+            "version": "1.2.0"
+        },
+        {
+            "name": "slash-command-creator",
+            "source": "./slash-command-creator",
+            "description": "Helps you create custom slash commands for Gemini, Claude, and Codex.",
+            "version": "1.0.0"
+        },
+        {
+            "name": "summary",
+            "source": "./summary",
+            "description": "Generate structured conversation summaries for AI agent handoff and context preservation.",
             "version": "1.0.0"
         }
     ]
