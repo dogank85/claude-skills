@@ -5,8 +5,17 @@ import datetime
 import re
 
 def get_project_root():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    return os.path.abspath(os.path.join(script_dir, "../../../.."))
+    # Walk up from the current working directory to the nearest .git,
+    # so the script writes into the project it is run from regardless
+    # of where the skill itself is installed (repo, plugin cache, etc.).
+    path = os.getcwd()
+    while True:
+        if os.path.exists(os.path.join(path, ".git")):
+            return path
+        parent = os.path.dirname(path)
+        if parent == path:
+            raise SystemExit("Error: no .git found above the current directory; run from inside the project.")
+        path = parent
 
 def ensure_adr_dir(root):
     adr_dir = os.path.join(root, "docs", "adr")
