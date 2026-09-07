@@ -4,7 +4,7 @@ Patterns for managing multi-agent workflows, conversation continuity, and task c
 
 ## Conversation Continuity
 
-Each agent (Gemini and Codex) maintains its own conversation thread. When delegating to an agent:
+Each agent (Claude and Codex) maintains its own conversation thread. When delegating to an agent:
 - If this is the FIRST delegation to that agent → Start a NEW conversation
 - If already delegated to that agent → RESUME the existing conversation
 - Only start a NEW conversation when the user EXPLICITLY says "start a new conversation"
@@ -32,7 +32,7 @@ This works even when the user is on their phone via Remote Control — the respo
 
 ### Manual "Agent Done" (Fallback)
 
-When the user says an agent is "done" (e.g., "Codex done" or "Gemini finished"):
+When the user says an agent is "done" (e.g., "Codex done" or "Claude finished"):
 - **Do NOT check status** - The user already knows it's complete
 - **Check the summary** by default
 - **Only request a full report** when the user explicitly asks
@@ -48,14 +48,14 @@ If the user says "done" before the watcher fires, process the summary as usual. 
 ### Conversation Continuity
 
 ```
-User: Delegate X to Gemini
-You: [Start NEW Gemini conversation]
+User: Delegate X to Codex
+You: [Start NEW Codex conversation]
 
-User: Delegate Y to Gemini
-You: [RESUME existing Gemini conversation]
+User: Delegate Y to Codex
+You: [RESUME existing Codex conversation]
 
-User: Start a new conversation and delegate Z to Gemini
-You: [Start FRESH NEW Gemini conversation]
+User: Start a new conversation and delegate Z to Codex
+You: [Start FRESH NEW Codex conversation]
 ```
 
 ### High Reasoning Mode
@@ -74,6 +74,6 @@ You: [Use normal reasoning, resume Codex conversation]
 User: Codex done
 You: [Check SUMMARY only, no status check]
 
-User: Gemini finished, get the report
+User: Codex finished, get the report
 You: [Get the full REPORT as requested]
 ```

@@ -67,7 +67,7 @@ def get_active_tasks():
                         time_str = f"{duration // 60}m" if duration >= 60 else f"{duration}s"
 
                         agent = data.get("agent", "agent")
-                        icon = {"claude": "🤖", "gemini": "⚡", "codex": "🔶", "antigravity": "🪐"}.get(agent, "⌛")
+                        icon = {"claude": "🤖", "codex": "🔶", "antigravity": "🪐"}.get(agent, "⌛")
                         active_tasks.append(f"{icon} {AMBER}{time_str}{RESET}")
                 except:
                     continue

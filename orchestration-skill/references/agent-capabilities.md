@@ -8,10 +8,6 @@ This is a template. The actual capabilities depend on what's installed in your p
 - Skills: Check `.claude/skills/` directory or run `claude agents`
 - MCP servers: Check `.mcp.json` or run `/mcp`
 
-### Gemini CLI
-- MCP servers: `gemini mcps list`
-- Built-in tools: file editing, shell commands, web search
-
 ### Codex CLI
 - Skills: Check Codex skill directories
 - Built-in tools: file editing, shell commands
@@ -31,19 +27,13 @@ When orchestrating tasks, consider these general guidelines:
 - Multi-step tool execution with validation
 - Comprehensive analysis or audit tasks
 
-### Delegate to Gemini CLI when:
-- Workflow blends analysis and execution
-- Need shell command context injection
-- Performing technical reviews (`--yolo` mode for non-destructive reviews)
-- Tasks that benefit from connected MCP servers
-
 ### Delegate to Codex CLI when:
 - Workflow is pure execution (running tests, commands)
 - Straightforward implementation tasks
 - Fast, instructions-only approach works
 
 ### Delegate to Antigravity CLI when:
-- You need capacity independent of the Gemini OAuth quota (e.g., Gemini high-tier is exhausted)
+- You need additional capacity from its own multi-provider router
 - You want high-reasoning work routed to Claude Opus 4.6 via `--effort high`
 - Multi-file implementation/redesign tasks where its built-in file tools shine
 - NOTE: conversation resume (`--parent_task_id`) is unsupported — agy emits no session_id
@@ -57,9 +47,8 @@ When orchestrating tasks, consider these general guidelines:
 
 To populate this file with your project's specific capabilities:
 1. Check installed Claude skills: `ls .claude/skills/`
-2. Check Gemini MCP servers: `gemini mcps list`
-3. Check Codex capabilities: review Codex skill directories
-4. Add project-specific delegation rules below
+2. Check Codex capabilities: review Codex skill directories
+3. Add project-specific delegation rules below
 
 ## Project-Specific Capabilities
 

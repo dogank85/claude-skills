@@ -5,6 +5,36 @@ import re
 import subprocess
 import sys
 
+def notification_fields(agent, task_id, exit_code, summary_content):
+    """Build every string the three notification surfaces need, in one place.
+
+    These used to be assigned inside the macOS-notification try block, while the
+    ntfy and channel pushes below read them — so a single osascript failure (a
+    locked screen, a headless run) took out the two notifications that actually
+    reach the user. Computing them up front, with no I/O, keeps a failure in one
+    surface from silencing the others.
+    """
+    # Agent icons and sounds matching status_vis.py
+    agent_config = {
+        "claude": {"icon": "🤖", "sound": "Tink"},
+        "codex": {"icon": "🔶", "sound": "Glass"},
+        "antigravity": {"icon": "🪐", "sound": "Submarine"}
+    }
+    config = agent_config.get(agent, {"icon": "🔶", "sound": "Pop"})
+    agent_display = agent.capitalize()
+
+    status_word = "Failed" if exit_code != 0 else "Complete"
+    project_name = os.environ.get("ORCHESTRATION_PROJECT_NAME", os.path.basename(os.getcwd()))
+    title = f"{project_name}: {config['icon']} {agent_display} Task {task_id} {status_word}"
+
+    # Extract first line or headline for preview
+    preview = summary_content.strip().split('\n')[0] if summary_content else "Task finished successfully."
+    if len(preview) > 100:
+        preview = preview[:97] + "..."
+
+    return config["icon"], config["sound"], agent_display, title, preview
+
+
 def main():
     parser = argparse.ArgumentParser(description="Finalize a delegated task.")
     parser.add_argument("--task_id", required=True, help="The ID of the task.")
@@ -41,7 +71,12 @@ def main():
             with open(args.status_file, 'r') as f:
                 data = json.load(f)
             
-            if timed_out:
+            # cancel_task.py writes CANCELLED before killing the agent, which is
+            # what makes this script run at all on a cancel. Honour that: the 143
+            # exit code below is the *mechanism* of the cancel, not a failure.
+            if data.get("status") == "CANCELLED":
+                pass
+            elif timed_out:
                 data["status"] = "FAILED"
                 limit = f" after {args.timeout}s" if args.timeout else ""
                 data["error"] = f"Agent killed (timeout{limit})."
@@ -89,32 +124,15 @@ def main():
     except Exception as e:
         print(f"Error in summary fallback: {e}", file=sys.stderr)
 
+    icon, sound, agent_display, title, preview = notification_fields(
+        args.agent, args.task_id, args.exit_code, summary_content
+    )
+
     # 4. Trigger macOS Notification
     try:
-        # Agent icons and sounds matching status_vis.py
-        agent_config = {
-            "claude": {"icon": "🤖", "sound": "Tink"},
-            "gemini": {"icon": "⚡", "sound": "Hero"},
-            "codex": {"icon": "🔶", "sound": "Glass"},
-            "antigravity": {"icon": "🪐", "sound": "Submarine"}
-        }
-        config = agent_config.get(args.agent, {"icon": "🔶", "sound": "Pop"})
-        icon = config["icon"]
-        sound = config["sound"]
-        agent_display = args.agent.capitalize()
-        
-        status_word = "Failed" if args.exit_code != 0 else "Complete"
-        project_name = os.environ.get("ORCHESTRATION_PROJECT_NAME", os.path.basename(os.getcwd()))
-        title = f"{project_name}: {icon} {agent_display} Task {args.task_id} {status_word}"
-        
-        # Extract first line or headline for preview
-        preview = summary_content.strip().split('\n')[0] if summary_content else "Task finished successfully."
-        if len(preview) > 100:
-            preview = preview[:97] + "..."
-            
         # Escape for AppleScript
-        preview = preview.replace('\\', '\\\\').replace('"', '\\"')
-        cmd = f'osascript -e \'display notification "{preview}" with title "{title}" sound name "{sound}"\''
+        escaped_preview = preview.replace('\\', '\\\\').replace('"', '\\"')
+        cmd = f'osascript -e \'display notification "{escaped_preview}" with title "{title}" sound name "{sound}"\''
         subprocess.run(cmd, shell=True)
     except Exception as e:
         print(f"Error sending notification: {e}", file=sys.stderr)

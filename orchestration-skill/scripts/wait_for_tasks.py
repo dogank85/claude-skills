@@ -102,6 +102,9 @@ def main():
 
     start_wait = time.time()
     final = {}  # task_id -> data, captured once a task reaches a terminal state
+    last_done = -1
+    last_beat = 0.0
+    KEEPALIVE = 300  # seconds
 
     while True:
         for tid in task_ids:
@@ -131,10 +134,18 @@ def main():
                     print_summary(tid, final[tid])
             sys.exit(2)
 
-        # Heartbeat: show progress each poll so the wait isn't dead air.
-        elapsed = format_duration(time.time() - start_wait)
-        running = [t for t in task_ids if t not in final]
-        print(f"[{elapsed}] {len(final)}/{len(task_ids)} done — running: {', '.join(running)}", flush=True)
+        # Heartbeat: only when something actually changed, plus a slow keepalive
+        # so a long quiet batch still isn't dead air. This watcher normally runs
+        # in the background and its stdout lands in the orchestrator's context —
+        # a line every poll would be ~240 lines an hour of pure noise, which is
+        # the context bloat this whole skill exists to avoid.
+        now = time.time()
+        if len(final) != last_done or now - last_beat >= KEEPALIVE:
+            elapsed = format_duration(now - start_wait)
+            running = [t for t in task_ids if t not in final]
+            print(f"[{elapsed}] {len(final)}/{len(task_ids)} done — running: {', '.join(running)}", flush=True)
+            last_done = len(final)
+            last_beat = now
 
         time.sleep(args.interval)
 

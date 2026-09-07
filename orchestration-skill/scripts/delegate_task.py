@@ -6,33 +6,66 @@ import sys
 import time
 import uuid
 
-def build_agent_command(agent, effort, sandbox, prompt_file, parent_session_id, timeout):
+# The delegation roster: one deliberately-chosen (model, reasoning effort) pair
+# per agent per tier, kept in one place so refreshing it is a data edit rather
+# than surgery on the command builders.
+#
+# Model and reasoning effort are separate dials on all three CLIs, so a tier
+# picks a sensible pairing and `--model` overrides just the model. The shape of
+# each ladder follows what each backend is good at: claude escalates the *model*
+# and holds effort steady, codex holds the model and escalates *effort*, and agy
+# bakes effort into the model slug itself (`-low`/`-high`), so it has no separate
+# dial to turn.
+#
+# Use agy's slugs, never its display names: `agy models` lists both, but a slug
+# is checkable against that list, while a near-miss display name fails silently.
+# That is exactly how "Gemini 3.5 Flash (High)" — a version that never existed —
+# survived here undetected. tests/test_model_roster.py now guards against it.
+MODEL_TIERS = {
+    "claude": {
+        "standard": ("sonnet", "medium"),
+        "high": ("opus", "medium"),
+    },
+    "codex": {
+        "standard": ("gpt-6-astra", "low"),
+        "high": ("gpt-6-astra", "medium"),
+    },
+    "antigravity": {
+        "standard": ("gemini-3.8-flash-high", None),
+        "high": ("claude-opus-4-6-thinking", None),
+    },
+}
+
+
+def resolve_model(agent, effort, model_override=None):
+    """Pick the (model, reasoning_effort) pair for a tier, honouring an override.
+
+    `--model` replaces only the model and keeps the tier's effort, which is safe
+    precisely because the two are independent flags on every backend. Returns
+    None for reasoning effort where the backend has no such dial.
+    """
+    if agent not in MODEL_TIERS:
+        raise ValueError(f"Unknown agent: {agent}")
+    model, reasoning = MODEL_TIERS[agent][effort]
+    return (model_override or model), reasoning
+
+
+def build_agent_command(agent, effort, sandbox, prompt_file, parent_session_id, timeout, model=None):
     """Return the shell command string that runs the chosen agent.
 
     Pure function (no side effects) so the per-agent invocation can be
     unit-tested without launching subprocesses. Session ID extraction for
     resume is handled separately in finish_task.py (regex over the JSON log).
     """
-    # Determine model/flags based on effort level.
-    gemini_model = "gemini-3-flash-preview"
-    claude_model = "haiku"
-    # agy (antigravity) is a multi-provider model router that selects models by
-    # their exact display name (spaces and parens included). Its high tier is a
-    # Claude model drawing on Antigravity's own capacity — independent of the
-    # Gemini OAuth quota the `gemini` backend consumes.
-    antigravity_model = "Gemini 3.5 Flash (High)"
-
-    if effort == "high":
-        gemini_model = "gemini-3.1-pro-preview"
-        claude_model = "sonnet"
-        antigravity_model = "Claude Opus 4.6 (Thinking)"
+    resolved_model, reasoning = resolve_model(agent, effort, model)
 
     if agent == "claude":
         # NOTE: do NOT use `--bare` here — it skips macOS keychain reads, so a
         # delegated Claude can't load the user's login and fails with
         # "Not logged in". Auth must work for delegation to function.
         cmd = f"claude -p \"$(cat '{prompt_file}')\" --output-format json"
-        cmd += f' --model {claude_model}'
+        cmd += f' --model {resolved_model}'
+        cmd += f' --effort {reasoning}'
         # Headless claude denies all tools by default, and when spawned from
         # another Claude session (always true for delegation) the
         # CLAUDE_CODE_SUBPROCESS_ENV_SCRUB hardening forces --permission-mode
@@ -50,21 +83,17 @@ def build_agent_command(agent, effort, sandbox, prompt_file, parent_session_id, 
             cmd += f' --resume {parent_session_id}'
         return cmd
 
-    if agent == "gemini":
-        cmd = f"gemini -p \"$(cat '{prompt_file}')\" --output-format json --yolo --model {gemini_model}"
-        if sandbox:
-            cmd += ' --sandbox'
-        if parent_session_id:
-            cmd += f' --resume {parent_session_id}'
-        return cmd
-
     if agent == "codex":
         if parent_session_id:
             cmd = f"codex exec resume {parent_session_id} \"$(cat '{prompt_file}')\" --json"
         else:
             cmd = f"codex exec \"$(cat '{prompt_file}')\" --json"
-        if effort == "high":
-            cmd += ' -c model_reasoning_effort="high"'
+        cmd += f' -m {resolved_model}'
+        # Always set the effort explicitly. Leaving it unset means inheriting
+        # whatever is in the user's own config.toml — which is how `--effort
+        # high` came to be a *downgrade* from an interactive default of xhigh.
+        # An unattended delegation should never depend on an interactive setting.
+        cmd += f' -c model_reasoning_effort="{reasoning}"'
         if sandbox:
             cmd += ' --sandbox workspace-write'
         return cmd
@@ -75,7 +104,7 @@ def build_agent_command(agent, effort, sandbox, prompt_file, parent_session_id, 
         # is unsupported and the caller drops parent_session_id before this.
         # --print-timeout raises agy's own 5-minute default wait to match the
         # orchestration watchdog, so long tasks aren't cut short by agy itself.
-        cmd = f"agy -p \"$(cat '{prompt_file}')\" --model \"{antigravity_model}\""
+        cmd = f"agy -p \"$(cat '{prompt_file}')\" --model \"{resolved_model}\""
         cmd += f' --add-dir "{os.getcwd()}"'
         cmd += ' --dangerously-skip-permissions'
         cmd += f' --print-timeout {timeout}s'
@@ -86,15 +115,51 @@ def build_agent_command(agent, effort, sandbox, prompt_file, parent_session_id, 
     raise ValueError(f"Unknown agent: {agent}")
 
 
+def build_augmented_prompt(prompt, agent, summary_file, report_file=None):
+    """Wrap the user's prompt with the headless-execution contract.
+
+    Pure function so the step numbering can be unit-tested: the steps are read by
+    an agent that has no other context, and a repeated number ("5." twice) reads
+    as a contradiction it has to guess its way past.
+    """
+    # Agent-specific instructions for writing files
+    write_instruction = f"2. When finished, you MUST write a concise summary of your work to this EXISTING file: {summary_file}\n"
+    if agent == "claude":
+        write_instruction += "   IMPORTANT: Use the `Edit` tool (or `bash` with `echo`) to write to it. The `Write` tool might fail if it tries to read first.\n"
+    elif agent == "codex":
+        write_instruction += "   IMPORTANT: Use your file editing capabilities to update this file.\n"
+    elif agent == "antigravity":
+        write_instruction += "   IMPORTANT: Use your file-editing tools (or a shell `echo`) to write the summary to this file.\n"
+
+    step = 5
+    report_instruction = ""
+    if report_file:
+        report_instruction = f"{step}. You MUST also write a detailed report of your findings/actions to this EXISTING file: {report_file}\n"
+        step += 1
+
+    return (
+        f"{prompt}\n\n"
+        "IMPORTANT INSTRUCTIONS FOR HEADLESS EXECUTION:\n"
+        "1. Perform the requested task.\n"
+        f"{write_instruction}"
+        "3. The summary file should be in Markdown format.\n"
+        "4. Do not ask for confirmation. Just do it.\n"
+        f"{report_instruction}"
+        f"{step}. Besides any files the task explicitly asks you to create, do not create unrelated files. "
+        "You MUST still write the summary file (and report file if specified) so the run can be tracked.\n"
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description="Delegate a task to a headless agent.")
-    parser.add_argument("--agent", required=True, choices=["claude", "gemini", "codex", "antigravity"], help="The agent to use.")
+    parser.add_argument("--agent", required=True, choices=["claude", "codex", "antigravity"], help="The agent to use.")
     parser.add_argument("--prompt", required=True, help="The task description/prompt.")
     parser.add_argument("--task_id", help="Optional custom task ID.")
     parser.add_argument("--parent_task_id", help="Optional parent task ID to resume session from.")
     parser.add_argument("--sandbox", action="store_true", help="Enable sandboxing for the agent.")
     parser.add_argument("--report", action="store_true", help="Request a detailed report in logs/results/.")
-    parser.add_argument("--effort", choices=["standard", "high"], default="standard", help="Set the reasoning effort level (standard=fast, high=smart).")
+    parser.add_argument("--effort", choices=["standard", "high"], default="standard", help="Tier to delegate at: standard=fast/cheap, high=more capable. Picks a (model, reasoning effort) pair — see MODEL_TIERS.")
+    parser.add_argument("--model", help="Override the tier's model with a specific one (e.g. 'fable', 'opus', 'gemini-3.8-flash-low'). The tier's reasoning effort still applies. Passed through verbatim, so it must be a name the chosen agent's CLI accepts.")
     parser.add_argument("--timeout", type=int, default=1800, help="Max agent runtime in seconds before it is auto-killed (default: 1800 = 30 min).")
 
     args = parser.parse_args()
@@ -153,32 +218,14 @@ def main():
         parent_session_id = None
 
     # 4. Construct the Prompt
-    report_instruction = ""
-    if args.report:
-        report_instruction = f"5. You MUST also write a detailed report of your findings/actions to this EXISTING file: {report_file}\n"
-
-    # Agent-specific instructions for writing files
-    write_instruction = f"2. When finished, you MUST write a concise summary of your work to this EXISTING file: {summary_file}\n"
-    if args.agent == "claude":
-        write_instruction += "   IMPORTANT: Use the `Edit` tool (or `bash` with `echo`) to write to it. The `Write` tool might fail if it tries to read first.\n"
-    elif args.agent == "gemini":
-        write_instruction += "   IMPORTANT: Use your `write_file` tool to write the summary to {summary_file}. If that is not available, use `run_shell_command` with `echo`.\n"
-    elif args.agent == "codex":
-        write_instruction += "   IMPORTANT: Use your file editing capabilities to update this file.\n"
-    elif args.agent == "antigravity":
-        write_instruction += "   IMPORTANT: Use your file-editing tools (or a shell `echo`) to write the summary to this file.\n"
-
-    augmented_prompt = (
-        f"{args.prompt}\n\n"
-        "IMPORTANT INSTRUCTIONS FOR HEADLESS EXECUTION:\n"
-        "1. Perform the requested task.\n"
-        f"{write_instruction}"
-        "3. The summary file should be in Markdown format.\n"
-        "4. Do not ask for confirmation. Just do it.\n"
-        f"{report_instruction}"
-        "5. Besides any files the task explicitly asks you to create, do not create unrelated files. You MUST still write the summary file (and report file if specified) so the run can be tracked.\n"
+    augmented_prompt = build_augmented_prompt(
+        prompt=args.prompt,
+        agent=args.agent,
+        summary_file=summary_file,
+        report_file=report_file if args.report else None,
     )
-    
+
+
     # Write prompt to file to avoid shell injection issues
     prompt_file = os.path.join(raw_dir, f"{task_id}.prompt.txt")
     with open(prompt_file, 'w') as f:
@@ -193,6 +240,7 @@ def main():
         prompt_file=prompt_file,
         parent_session_id=parent_session_id,
         timeout=args.timeout,
+        model=args.model,
     )
 
     # 6. Launch the Agent
@@ -245,12 +293,18 @@ def main():
     process = subprocess.Popen(full_cmd, shell=True)
     
     # 7. Write Status File
+    # No "pid" key: the wrapper records its own PID into pid_file (`echo $$`)
+    # only after it starts, so anything written here would be a guess. Every
+    # consumer resolves the PID through pid_file instead.
     status_data = {
         "task_id": task_id,
         "status": "RUNNING",
-        "pid": None,
         "pid_file": pid_file,
         "agent": args.agent,
+        # Record what actually ran: with tiers and a --model override, "which
+        # model produced this summary?" is otherwise unanswerable after the fact.
+        "model": resolve_model(args.agent, args.effort, args.model)[0],
+        "effort": args.effort,
         "log_file": log_file,
         "summary_file": summary_file,
         "report_file": report_file if args.report else None,

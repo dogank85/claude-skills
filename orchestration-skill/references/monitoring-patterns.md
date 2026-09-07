@@ -42,7 +42,7 @@ Track multiple delegations simultaneously:
 claude -p "Task 1" &
 PID1=$!
 
-gemini -p "Task 2" &
+agy -p "Task 2" &
 PID2=$!
 
 codex exec "Task 3" &
@@ -74,18 +74,6 @@ claude --resume "$session_id" "Continue with Part 2"
 claude --resume "$session_id" "Finish the implementation" --no-interactive
 ```
 
-### Gemini CLI Resume
-
-Gemini CLI automatically continues from the most recent conversation:
-
-```bash
-# Initial delegation
-gemini -p "Run workflow Part 1"
-
-# Continue (resumes last conversation)
-gemini -p "Continue with Part 2"
-```
-
 ### Codex CLI Resume
 
 Resume Codex exec sessions:
@@ -115,18 +103,6 @@ is_error=$(echo "$result" | jq -r '.is_error')
 if [ "$is_error" = "true" ]; then
   echo "Error occurred:"
   echo "$result" | jq -r '.result'
-  exit 1
-fi
-```
-
-**Gemini CLI (JSON output):**
-```bash
-result=$(gemini -p "Run workflow" --output-format json)
-error=$(echo "$result" | jq -r '.error')
-
-if [ "$error" != "null" ]; then
-  echo "Error occurred:"
-  echo "$result" | jq -r '.error.message'
   exit 1
 fi
 ```
@@ -201,7 +177,7 @@ Collect and aggregate results from parallel delegations:
 claude -p "Task 1" --output-format json > result1.json &
 PID1=$!
 
-gemini -p "Task 2" --output-format json > result2.json &
+claude -p "Task 2" --output-format json > result2.json &
 PID2=$!
 
 codex exec "Task 3" --json > result3.json &
@@ -215,7 +191,7 @@ echo "=== Task 1 Result ==="
 cat result1.json | jq -r '.result'
 
 echo "=== Task 2 Result ==="
-cat result2.json | jq -r '.response'
+cat result2.json | jq -r '.result'
 
 echo "=== Task 3 Result ==="
 cat result3.json
@@ -227,11 +203,6 @@ cat result3.json
 - Text output: Human-readable, final message only
 - JSON output: Structured with metadata (session_id, cost, etc.)
 - Stream JSON output: Real-time events (use `--output-format stream-json`)
-
-**Gemini CLI:**
-- Text output: Human-readable, final message only
-- JSON output: Structured with stats (tokens, tools, files)
-- Stream JSON output: Real-time JSONL events
 
 **Codex CLI:**
 - Default: Final message to stdout, progress to stderr
@@ -353,11 +324,12 @@ Reuse session context for related tasks:
 
 ```bash
 # Initial session with full context
-result=$(gemini -p "Load context and create item 1.1" --output-format json)
+result=$(claude -p "Load context and create item 1.1" --output-format json)
+session_id=$(echo "$result" | jq -r '.session_id')
 
 # Subsequent tasks reuse cached context (faster)
-gemini -p "Create item 1.2"  # Resumes last session, context cached
-gemini -p "Create item 1.3"  # Even faster with cached context
+claude --resume "$session_id" "Create item 1.2"  # Resumes session, context cached
+claude --resume "$session_id" "Create item 1.3"  # Even faster with cached context
 ```
 
 ---
@@ -390,7 +362,6 @@ claude -p "Run workflow" &  # May hang on approval prompts
 
 # Do:
 claude -p "Run workflow" --permission-mode acceptEdits &  # Auto-approves
-gemini -p "Run workflow" --yolo &  # Auto-approves
 codex exec --full-auto "Run workflow" &  # Auto-approves
 ```
 

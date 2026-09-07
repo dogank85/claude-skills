@@ -55,18 +55,39 @@ To preserve context between tasks without bloating the orchestrator, we use **Se
 
 ## Reasoning Effort
 
-For complex tasks (debugging race conditions, architectural refactoring), you can boost the agent's capabilities:
+For complex tasks (debugging race conditions, architectural refactoring), escalate the tier:
 
 *   **Flag**: `--effort high` (Default: `standard`)
-*   **Mechanism**:
-    *   **Gemini**: Switches from `flash` to `gemini-3.1-pro-preview`.
-    *   **Claude**: Switches from `haiku` to `sonnet`.
-    *   **Codex**: Enables `model_reasoning_effort="high"` (e.g. o1/o3 behavior).
+*   **Mechanism** — each tier is one (model, reasoning effort) pair, escalating on the axis that
+    backend rewards:
+    *   **Claude**: `sonnet` → `opus`, both at medium effort. The model carries the jump.
+    *   **Codex**: `gpt-6-astra` at `low` → `medium`. The model holds; the reasoning deepens.
+    *   **Antigravity**: `gemini-3.8-flash-high` → `claude-opus-4-6-thinking`. Effort is baked into
+        the slug, so there is no separate dial.
+
+The canonical table is `MODEL_TIERS` in `scripts/delegate_task.py`; treat this section as
+commentary, not as the source of truth.
 
 **Usage:**
 ```bash
-python3 scripts/delegate_task.py --agent gemini --prompt "Debug complex deadlock" --effort high
+python3 scripts/delegate_task.py --agent codex --prompt "Debug complex deadlock" --effort high
 ```
+
+## Pinning a specific model
+
+`--model` overrides the tier's model and keeps its reasoning effort, which is safe because the two
+are independent flags on every backend. Reach for it when you know exactly what you want; the tiers
+exist so you don't have to decide in the common case.
+
+```bash
+python3 scripts/delegate_task.py --agent claude --prompt "Draft the migration" --model fable
+python3 scripts/delegate_task.py --agent antigravity --prompt "Survey the API" --model gemini-3.1-pro-high
+```
+
+The value is passed through verbatim, so it must be a name that agent's CLI accepts — `agy models`
+lists agy's, and claude takes `haiku`/`sonnet`/`opus`/`fable` or a full name like `claude-opus-5`.
+A wrong name doesn't fail loudly; it wastes the whole delegation. `tests/test_model_roster.py`
+guards the built-in roster against exactly that, but it cannot vet an ad-hoc `--model`.
 
 ## Sandboxing
 
@@ -75,8 +96,8 @@ For security, especially when delegates are executing code or shell commands, yo
 *   **Flag**: `--sandbox`
 *   **Mechanism**:
     *   **Claude**: Uses `--sandbox` (OS-level isolation).
-    *   **Gemini**: Uses `--sandbox` (Seatbelt/Container).
     *   **Codex**: Uses `--sandbox workspace-write` (Allows writing to project, blocks system access).
+    *   **Antigravity**: Uses `--sandbox` (OS-level isolation).
 
 **Usage:**
 ```bash
@@ -112,12 +133,6 @@ When deciding which agent to delegate a task to, use the following criteria:
 - Workflow has multi-step tool execution
 - Comprehensive validation or analysis is needed
 
-### Choose Gemini CLI when:
-- Workflow is a blend of analysis and execution
-- Need shell command context injection
-- Workflow benefits from `@{file}` injection
-- Performing technical analysis and review tasks (`--yolo` mode is great for non-destructive reviews)
-
 ### Choose Codex CLI when:
 - Workflow is pure execution (running tests, running commands)
 - Need fast, keyboard-first execution
@@ -125,7 +140,7 @@ When deciding which agent to delegate a task to, use the following criteria:
 - Straightforward implementation tasks
 
 ### Choose Antigravity CLI (`agy`) when:
-- Gemini high-tier quota is exhausted and you still need a high-reasoning run (routes to Claude Opus 4.6 via `--effort high`)
+- You need a high-reasoning run routed to Claude Opus 4.6 via `--effort high`
 - You want a provider-independent path — agy is a multi-provider router drawing on Antigravity's own capacity
 - Multi-file implementation/redesign tasks where its built-in file-editing tools shine
 - Not suitable when you need conversation resume (`--parent_task_id` unsupported — agy emits no session_id)
