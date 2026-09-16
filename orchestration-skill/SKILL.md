@@ -1,7 +1,7 @@
 ---
 name: orchestration-skill
 description: Orchestrate headless agents (Claude, Codex, Antigravity) using a "Fire and Forget" pattern. Use this skill when the user wants to delegate tasks to other agents, run background work, launch parallel agents, or orchestrate multi-agent workflows. Also use when the user mentions delegation, background agents, orchestration, or wants to run something with a different AI agent.
-version: 1.4.0
+version: 1.6.0
 ---
 
 # Orchestration Skill
@@ -37,6 +37,23 @@ The practical consequence: a task phrased "run the test suite and report failure
 will usually write a plausible-sounding summary anyway, which is the most expensive
 failure mode this skill has — you get a confident answer built on nothing. If the verb in
 your prompt is run/execute/build/install/commit, pass `--sandbox`.
+
+## Writing the prompt you hand the worker
+
+One prompt, no follow-up turn, nobody watching — and the three backends drift in different
+directions, so one prompt style doesn't serve all three:
+
+| `--agent claude` | `--agent codex` | `--agent antigravity` |
+| --- | --- | --- |
+| Widens scope, writes long | Waits for permission it'll never get | Reports tersely |
+| Bound the scope; on audits ask for *everything* and filter yourself | Pre-authorize the safe loop; say what "done" means | Ask for specific detail; nudge it to think first |
+
+Two rules hold everywhere: settle ambiguity in the prompt and have the worker record its
+assumptions, since it has no one to ask — and **don't tell it to double-check its work**.
+All three vendors now say that costs tokens without improving results. If you want work
+actually verified, give it `--sandbox` so it has a shell. Tools, not words.
+
+`references/prompting-workers.md` has the per-backend detail and a worked example each.
 
 ## Tools
 
@@ -260,6 +277,7 @@ To maintain a clean and predictable environment, Orchestrators must adhere to th
 3.  **Containment**: Agents should only write to files if explicitly necessary for the task (e.g., refactoring code). Documentation and reports belong in `logs/orchestration/results/`.
 4.  **Auto-Wake**: Always start a background watcher after delegating to enable proactive notifications — `watch_task.py` for a single task, or `wait_for_tasks.py` for a batch (both via `run_in_background`) — with a timeout larger than the agent's.
 5.  **Match tools to the verb**: If the task must execute anything, delegate with `--sandbox` (see "What a delegated agent can actually do"). A worker without Bash will still answer; it just won't have run anything.
+6.  **Prompt for the backend you chose**: before writing a non-trivial delegated prompt, check that backend's row above — claude, codex and antigravity drift in different directions, so the same wording lands differently. `references/prompting-workers.md` has the detail.
 
 ## Reference Files
 
@@ -267,6 +285,7 @@ To maintain a clean and predictable environment, Orchestrators must adhere to th
 
 | File | Read it when |
 | --- | --- |
+| `references/prompting-workers.md` | Writing the prompt for a delegated task, or a worker came back confident but hollow |
 | `references/delegation_patterns.md` | Choosing which agent/effort fits a task, or designing a fan-out |
 | `references/workflow-management.md` | Chaining tasks, conversation continuity, resume semantics |
 | `references/monitoring-patterns.md` | Debugging the status/PID machinery, or driving the CLIs directly |

@@ -119,7 +119,7 @@ python3 scripts/delegate_task.py --agent claude --prompt "Analyze database perfo
 ## Best Practices
 
 *   **Trust the System**: Do not try to `tail` the log file unless debugging a failure.
-*   **Clear Instructions**: Ensure the prompt explicitly tells the agent what to put in the summary file.
+*   **Clear Instructions**: Ensure the prompt explicitly tells the agent what to put in the summary file. How to phrase the rest of the prompt is backend-specific — see `prompting-workers.md`.
 *   **Idempotency**: If possible, design tasks so they can be retried if they fail.
 *   **File Containment**: NEVER instruct an agent to write reports to the project root. All outputs must go to `logs/results/`.
 
