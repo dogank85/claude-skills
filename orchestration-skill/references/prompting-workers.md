@@ -12,7 +12,7 @@ produces a different defect depending on which one you sent it to.
 
 | | `--agent claude` | `--agent codex` | `--agent antigravity` |
 | --- | --- | --- | --- |
-| Model | `sonnet` / `opus` | `gpt-6-astra` | `gemini-3.8-flash-high` |
+| Model | `sonnet` / `opus` | `gpt-6-astra` / `gpt-6.1-sol` | `gemini-3.8-flash-high` |
 | Default scope behavior | **Widens** — adds steps you didn't ask for | **Narrows** — stops at a first pass | Follows the ask literally |
 | Default verbosity | **Over-writes** long documents | Moderate | **Under-writes** — terse by default |
 | Stopping behavior | Runs to completion | **Stops to await review that never comes** | Runs to completion |
@@ -130,7 +130,7 @@ examples. OpenAI says elaborate recipes now hinder results. Both are right about
 model, and the resolution is a rule rather than a contradiction:
 
 **Scaffold inversely to model capability.** `gemini-3.8-flash-high` is the lightest model in
-the roster and benefits from structure and an example. `gpt-6-astra` and `opus` are strong
+the roster and benefits from structure and an example. `gpt-6-astra`, `gpt-6.1-sol` and `opus` are strong
 enough that a detailed itinerary constrains them below what they'd do unprompted — for
 those, state the goal, the definition of done, and the constraints, then get out of the way.
 

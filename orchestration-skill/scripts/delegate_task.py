@@ -13,7 +13,7 @@ import uuid
 # Model and reasoning effort are separate dials on all three CLIs, so a tier
 # picks a sensible pairing and `--model` overrides just the model. The shape of
 # each ladder follows what each backend is good at: claude escalates the *model*
-# and holds effort steady, codex holds the model and escalates *effort*, and agy
+# and holds effort steady, codex escalates both model and *effort*, and agy
 # bakes effort into the model slug itself (`-low`/`-high`), so it has no separate
 # dial to turn.
 #
@@ -28,7 +28,7 @@ MODEL_TIERS = {
     },
     "codex": {
         "standard": ("gpt-6-astra", "low"),
-        "high": ("gpt-6-astra", "medium"),
+        "high": ("gpt-6.1-sol", "high"),
     },
     "antigravity": {
         "standard": ("gemini-3.8-flash-high", None),

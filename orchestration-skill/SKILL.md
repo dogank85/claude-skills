@@ -104,10 +104,10 @@ a grid of combinations at the moment you have least context.
 | Tier | `--agent claude` | `--agent codex` | `--agent antigravity` |
 | --- | --- | --- | --- |
 | *(default)* | `sonnet` + medium effort | `gpt-6-astra` + low effort | `gemini-3.8-flash-high` |
-| `--effort high` | `opus` + medium effort | `gpt-6-astra` + medium effort | `claude-opus-4-6-thinking` |
+| `--effort high` | `opus` + medium effort | `gpt-6.1-sol` + high effort | `claude-opus-4-6-thinking` |
 
 Each ladder escalates on the axis that backend actually rewards: claude changes the *model* and
-holds effort steady, codex holds the model and raises *effort*, and agy bakes effort into the model
+holds effort steady, codex moves to `gpt-6.1-sol` and raises *effort*, and agy bakes effort into the model
 slug so there is nothing separate to turn.
 
 **`--model` overrides just the model** and keeps the tier's effort — `--model fable --effort high`

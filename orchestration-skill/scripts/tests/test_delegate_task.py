@@ -105,8 +105,8 @@ class TestRegressionGuards(unittest.TestCase):
 
     def test_codex_high(self):
         cmd = build("codex", effort="high")
-        self.assertIn("-m gpt-6-astra", cmd)
-        self.assertIn('-c model_reasoning_effort="medium"', cmd)
+        self.assertIn("-m gpt-6.1-sol", cmd)
+        self.assertIn('-c model_reasoning_effort="high"', cmd)
 
     def test_codex_effort_is_always_explicit(self):
         # Omitting it inherits the user's interactive config.toml, which once made

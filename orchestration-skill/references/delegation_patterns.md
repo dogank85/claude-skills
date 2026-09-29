@@ -61,7 +61,7 @@ For complex tasks (debugging race conditions, architectural refactoring), escala
 *   **Mechanism** — each tier is one (model, reasoning effort) pair, escalating on the axis that
     backend rewards:
     *   **Claude**: `sonnet` → `opus`, both at medium effort. The model carries the jump.
-    *   **Codex**: `gpt-6-astra` at `low` → `medium`. The model holds; the reasoning deepens.
+    *   **Codex**: `gpt-6-astra` at `low` → `gpt-6.1-sol` at `high`. Both model and reasoning change.
     *   **Antigravity**: `gemini-3.8-flash-high` → `claude-opus-4-6-thinking`. Effort is baked into
         the slug, so there is no separate dial.
 
