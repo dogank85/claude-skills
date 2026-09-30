@@ -1,7 +1,7 @@
 ---
 name: orchestration-skill
 description: Orchestrate headless agents (Claude, Codex, Antigravity) using a "Fire and Forget" pattern. Use this skill when the user wants to delegate tasks to other agents, run background work, launch parallel agents, or orchestrate multi-agent workflows. Also use when the user mentions delegation, background agents, orchestration, or wants to run something with a different AI agent.
-version: 1.6.0
+version: 1.7.0
 ---
 
 # Orchestration Skill
@@ -54,6 +54,14 @@ All three vendors now say that costs tokens without improving results. If you wa
 actually verified, give it `--sandbox` so it has a shell. Tools, not words.
 
 `references/prompting-workers.md` has the per-backend detail and a worked example each.
+
+## Claude sessions (lead + workers)
+
+For longer Claude-only work, a **lead** session can hand tasks to named **worker** sessions
+(`claude --bg -n <name>`) and get results back with `SendMessage` — no watcher needed, since
+a message wakes an idle session on its own. Roles, the start command, message format,
+permission rules (default mode `auto`) and the lead's task list are in
+`references/claude-sessions.md`. Codex and Antigravity still use `delegate_task.py` + a watcher.
 
 ## Tools
 
@@ -242,7 +250,7 @@ Task completion notifications are delivered via two mechanisms:
 
 ### Primary: Background Watcher (the real auto-wake)
 
-**Always start a background watcher after delegating** — it is the only mechanism that *proactively wakes* the orchestrator while it sits idle:
+**Always start a background watcher after delegating** — for `delegate_task.py` jobs (Codex, Antigravity, headless Claude) it is the only mechanism that *proactively wakes* the orchestrator while it sits idle. (Claude worker *sessions* are different: their `SendMessage` wakes the lead directly — see `references/claude-sessions.md`.)
 
 ```bash
 python3 .claude/skills/orchestration-skill/scripts/watch_task.py --task_id <TASK_ID>
@@ -285,6 +293,7 @@ To maintain a clean and predictable environment, Orchestrators must adhere to th
 
 | File | Read it when |
 | --- | --- |
+| `references/claude-sessions.md` | Running a lead with Claude worker sessions that report back via `SendMessage` |
 | `references/prompting-workers.md` | Writing the prompt for a delegated task, or a worker came back confident but hollow |
 | `references/delegation_patterns.md` | Choosing which agent/effort fits a task, or designing a fan-out |
 | `references/workflow-management.md` | Chaining tasks, conversation continuity, resume semantics |
