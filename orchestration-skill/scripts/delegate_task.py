@@ -32,7 +32,7 @@ MODEL_TIERS = {
     },
     "antigravity": {
         "standard": ("gemini-3.8-flash-high", None),
-        "high": ("claude-opus-4-6-thinking", None),
+        "high": ("claude-opus-5-5-medium", None),
     },
 }
 

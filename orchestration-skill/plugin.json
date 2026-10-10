@@ -1,6 +1,6 @@
 {
   "name": "orchestration-skill",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "Headless agent orchestration for Claude, Codex, and Antigravity.",
   "author": {
     "name": "Dogan Karakaya"

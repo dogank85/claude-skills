@@ -1,7 +1,7 @@
 ---
 name: orchestration-skill
 description: Orchestrate headless agents (Claude, Codex, Antigravity) using a "Fire and Forget" pattern. Use this skill when the user wants to delegate tasks to other agents, run background work, launch parallel agents, or orchestrate multi-agent workflows. Also use when the user mentions delegation, background agents, orchestration, or wants to run something with a different AI agent.
-version: 1.7.0
+version: 1.7.1
 ---
 
 # Orchestration Skill
@@ -112,7 +112,7 @@ a grid of combinations at the moment you have least context.
 | Tier | `--agent claude` | `--agent codex` | `--agent antigravity` |
 | --- | --- | --- | --- |
 | *(default)* | `sonnet` + medium effort | `gpt-6-astra` + low effort | `gemini-3.8-flash-high` |
-| `--effort high` | `opus` + medium effort | `gpt-6.1-sol` + high effort | `claude-opus-4-6-thinking` |
+| `--effort high` | `opus` + medium effort | `gpt-6.1-sol` + high effort | `claude-opus-5-5-medium` |
 
 Each ladder escalates on the axis that backend actually rewards: claude changes the *model* and
 holds effort steady, codex moves to `gpt-6.1-sol` and raises *effort*, and agy bakes effort into the model

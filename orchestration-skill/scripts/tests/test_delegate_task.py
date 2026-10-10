@@ -46,7 +46,7 @@ class TestAntigravityCommand(unittest.TestCase):
 
     def test_high_uses_claude_opus(self):
         cmd = build("antigravity", effort="high")
-        self.assertIn('--model "claude-opus-4-6-thinking"', cmd)
+        self.assertIn('--model "claude-opus-5-5-medium"', cmd)
 
     def test_uses_slugs_not_display_names(self):
         # Display names ("Gemini 3.8 Flash (High)") fail silently on a near-miss;

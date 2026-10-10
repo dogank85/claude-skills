@@ -23,7 +23,7 @@ and hand back for review — which is right in an interactive session and silent
 here. It stops, the wrapper fires, and you get a summary describing a first pass as though
 it were the finished job.
 
-`--effort high` on antigravity routes to `claude-opus-4-6-thinking`, a **Claude** model. At
+`--effort high` on antigravity routes to `claude-opus-5-5-medium`, a **Claude** model. At
 that tier the claude column applies, not the antigravity one.
 
 ## Rules for every backend
@@ -120,7 +120,7 @@ extra thinking tokens. Use it for anything diagnostic.
 
 **Structure helps here.** See the scaffolding note below.
 
-**Watch the tier boundary.** `--effort high` is `claude-opus-4-6-thinking`. Prompt it as a
+**Watch the tier boundary.** `--effort high` is `claude-opus-5-5-medium`. Prompt it as a
 Claude worker.
 
 ## How much structure to use
