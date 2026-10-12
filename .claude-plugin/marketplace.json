@@ -38,7 +38,7 @@
             "name": "orchestration-skill",
             "source": "./orchestration-skill",
             "description": "Headless agent orchestration for Claude, Codex, and Antigravity.",
-            "version": "1.7.1"
+            "version": "1.8.0"
         },
         {
             "name": "slash-command-creator",

@@ -1,7 +1,7 @@
 ---
 name: orchestration-skill
 description: Orchestrate headless agents (Claude, Codex, Antigravity) using a "Fire and Forget" pattern. Use this skill when the user wants to delegate tasks to other agents, run background work, launch parallel agents, or orchestrate multi-agent workflows. Also use when the user mentions delegation, background agents, orchestration, or wants to run something with a different AI agent.
-version: 1.7.1
+version: 1.8.0
 ---
 
 # Orchestration Skill
@@ -45,13 +45,16 @@ directions, so one prompt style doesn't serve all three:
 
 | `--agent claude` | `--agent codex` | `--agent antigravity` |
 | --- | --- | --- |
-| Widens scope, writes long | Waits for permission it'll never get | Reports tersely |
+| Widens scope, writes long; Opus 5.5 may end early on a progress report | Waits for permission it'll never get | Reports tersely |
 | Bound the scope; on audits ask for *everything* and filter yourself | Pre-authorize the safe loop; say what "done" means | Ask for specific detail; nudge it to think first |
 
 Two rules hold everywhere: settle ambiguity in the prompt and have the worker record its
 assumptions, since it has no one to ask — and **don't tell it to double-check its work**.
 All three vendors now say that costs tokens without improving results. If you want work
 actually verified, give it `--sandbox` so it has a shell. Tools, not words.
+
+The launcher appends a time budget (from `--timeout`), an unfinished-items line in every
+summary, and, for Opus 5.5 workers, Anthropic's keep-going instruction. Don't repeat them.
 
 `references/prompting-workers.md` has the per-backend detail and a worked example each.
 

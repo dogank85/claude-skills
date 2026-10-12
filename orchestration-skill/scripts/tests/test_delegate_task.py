@@ -193,6 +193,25 @@ class TestAugmentedPrompt(unittest.TestCase):
         self.assertIn("file editing capabilities", build_augmented_prompt("x", "codex", self.SUMMARY))
         self.assertIn("file-editing tools", build_augmented_prompt("x", "antigravity", self.SUMMARY))
 
+    def test_unfinished_items_always_requested(self):
+        for agent in ("claude", "codex", "antigravity"):
+            self.assertIn("Unfinished: none", build_augmented_prompt("x", agent, self.SUMMARY))
+
+    def test_time_budget_tracks_timeout(self):
+        self.assertIn("stopped at 900s", build_augmented_prompt("x", "codex", self.SUMMARY, timeout=900))
+        self.assertNotIn("Time budget", build_augmented_prompt("x", "codex", self.SUMMARY))
+
+    def test_keep_going_only_for_opus_55(self):
+        marker = "A standing instruction from the user"
+        self.assertIn(marker, build_augmented_prompt("x", "claude", self.SUMMARY, model="opus"))
+        self.assertIn(marker, build_augmented_prompt("x", "antigravity", self.SUMMARY, model="claude-opus-5-5-medium"))
+        for agent, model in (("claude", "sonnet"), ("codex", "gpt-6.1-sol"), ("antigravity", "gemini-3.8-flash-high")):
+            self.assertNotIn(marker, build_augmented_prompt("x", agent, self.SUMMARY, model=model))
+
+    def test_extras_do_not_add_numbered_steps(self):
+        prompt = build_augmented_prompt("Do X", "claude", self.SUMMARY, timeout=600, model="opus")
+        self.assertEqual(self._steps(prompt), [1, 2, 3, 4, 5])
+
 
 class TestIconParity(unittest.TestCase):
     """🪐 must be wired into both notification surfaces, or antigravity tasks

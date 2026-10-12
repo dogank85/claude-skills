@@ -115,7 +115,32 @@ def build_agent_command(agent, effort, sandbox, prompt_file, parent_session_id, 
     raise ValueError(f"Unknown agent: {agent}")
 
 
-def build_augmented_prompt(prompt, agent, summary_file, report_file=None):
+# Anthropic's Opus 5.5 guide: on long multi-part tasks the model sometimes ends a
+# turn with a progress report instead of a tool call. Headless, that ends the run
+# and the wrapper files a partial job as finished. This is the guide's standing
+# instruction for fully unattended agents, verbatim.
+OPUS_55_KEEP_GOING = (
+    "A standing instruction from the user, the person you are working for. It is about how your turns end. "
+    "A message with no tool call in it ends your turn, and the work stops there until you are asked to continue. "
+    "The user has seen you end turns in four ways while work they asked for was still owed, and does not want any of them. "
+    "One: a long summary of what was done that closes by announcing the next step and has no tool call, so the next thing never starts. "
+    "Two: an offer to carry on with something unless the user would prefer otherwise, which stops to wait for an answer the user was not going to give. "
+    "Three: a list of decisions for the user when, by your own account, none of them blocks the rest of the work. "
+    "Four: deciding that this is a good place to report, because the turn has been long or a milestone is done. "
+    "Status notes are welcome, and so are your recommendations on open decisions, but put them in the same message as your next tool call "
+    "and carry on with whatever does not depend on the user's answer. "
+    "If you notice yourself inviting the user to redirect you or offering to wait, delete it and do the next thing. "
+    "The stops the user does want are the ones where nothing can move without them, or where the thing blocking you is deliberately protected from you. "
+    "This does not override the need for confirmation on risky or destructive actions."
+)
+
+
+def is_opus_55(model):
+    """True when the resolved model is Opus 5.5 (claude's `opus` alias resolves to it)."""
+    return model == "opus" or "opus-5-5" in (model or "")
+
+
+def build_augmented_prompt(prompt, agent, summary_file, report_file=None, timeout=None, model=None):
     """Wrap the user's prompt with the headless-execution contract.
 
     Pure function so the step numbering can be unit-tested: the steps are read by
@@ -137,16 +162,24 @@ def build_augmented_prompt(prompt, agent, summary_file, report_file=None):
         report_instruction = f"{step}. You MUST also write a detailed report of your findings/actions to this EXISTING file: {report_file}\n"
         step += 1
 
+    extra = ""
+    if timeout:
+        # Opus 5.5 paces itself to a stated budget; the watchdog stays the hard stop.
+        extra += f"\nTime budget: this run is stopped at {timeout}s wall-clock. Pace the work to finish well inside it.\n"
+    if is_opus_55(model):
+        extra += f"\n{OPUS_55_KEEP_GOING}\n"
+
     return (
         f"{prompt}\n\n"
         "IMPORTANT INSTRUCTIONS FOR HEADLESS EXECUTION:\n"
         "1. Perform the requested task.\n"
         f"{write_instruction}"
-        "3. The summary file should be in Markdown format.\n"
+        "3. The summary file should be in Markdown format. End it by listing any part of the task left unfinished and why, or 'Unfinished: none'.\n"
         "4. Do not ask for confirmation. Just do it.\n"
         f"{report_instruction}"
         f"{step}. Besides any files the task explicitly asks you to create, do not create unrelated files. "
         "You MUST still write the summary file (and report file if specified) so the run can be tracked.\n"
+        f"{extra}"
     )
 
 
@@ -223,6 +256,8 @@ def main():
         agent=args.agent,
         summary_file=summary_file,
         report_file=report_file if args.report else None,
+        timeout=args.timeout,
+        model=resolve_model(args.agent, args.effort, args.model)[0],
     )
 
 

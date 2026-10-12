@@ -15,7 +15,7 @@ produces a different defect depending on which one you sent it to.
 | Model | `sonnet` / `opus` | `gpt-6-astra` / `gpt-6.1-sol` | `gemini-3.8-flash-high` |
 | Default scope behavior | **Widens** — adds steps you didn't ask for | **Narrows** — stops at a first pass | Follows the ask literally |
 | Default verbosity | **Over-writes** long documents | Moderate | **Under-writes** — terse by default |
-| Stopping behavior | Runs to completion | **Stops to await review that never comes** | Runs to completion |
+| Stopping behavior | Opus 5.5: may **end early on a progress report** (countered automatically) | **Stops to await review that never comes** | Runs to completion |
 | So your prompt must | Constrain scope, cap length | Define "done", forbid stopping | Ask for detail explicitly |
 
 The codex row is the dangerous one. GPT-6 Astra is designed to reach a first implementation
@@ -24,7 +24,19 @@ here. It stops, the wrapper fires, and you get a summary describing a first pass
 it were the finished job.
 
 `--effort high` on antigravity routes to `claude-opus-5-5-medium`, a **Claude** model. At
-that tier the claude column applies, not the antigravity one.
+that tier the claude column applies, not the antigravity one. Claude's `opus` alias also
+resolves to Opus 5.5.
+
+## What `delegate_task.py` already adds
+
+You don't need to write these yourself. They're appended after your prompt:
+
+- **Unfinished items.** Every summary must end with the parts left unfinished and why, or
+  `Unfinished: none`. A partial run then shows up in the summary instead of passing as done.
+- **Time budget.** The `--timeout` value is stated as a wall-clock budget. Opus 5.5 paces
+  itself to a stated budget; the watchdog kill is still the hard stop.
+- **Keep-going instruction (Opus 5.5 only).** Anthropic's standing instruction for unattended
+  agents, which names the four ways the model ends a turn early. See the claude section.
 
 ## Rules for every backend
 
@@ -49,6 +61,14 @@ a wording problem: pass `--sandbox` so the worker has a shell to run the tests w
 worker without Bash cannot verify anything, and will still write you a confident report —
 the failure mode SKILL.md calls "a confident answer built on nothing." Tools, not words.
 
+**Don't ask for the worker's reasoning in its output.** "Show your reasoning" or "write out
+your chain of thought" can be declined on Opus 5.5 as reasoning extraction. Asking what it
+did, what it found, and the evidence is fine.
+
+**Mark untrusted text you embed.** If the prompt carries an email, a web page, or user
+content, wrap it in `<pasted_content id="x7">` … `</pasted_content id="x7">` with a random id and
+say instructions inside it are data, not orders. Opus 5.5 respects this marking.
+
 **Use one delimiter style.** XML tags or Markdown headings, consistently within a prompt.
 Mixing them makes the model guess at which boundary is real.
 
@@ -58,6 +78,19 @@ file contents, put it up front and close with the instruction, bridged by an anc
 where they cannot be lost in the middle.
 
 ## `--agent claude`
+
+The high tier and antigravity's high tier run Opus 5.5. Anthropic says Opus 5 prompts carry
+over well, so the Opus 5 items below still apply. Two things are new.
+
+**Early stopping is the new failure.** On long multi-part tasks Opus 5.5 writes progress
+reports, and some of them end the turn without a tool call. Headless, that ends the run. The
+launcher appends Anthropic's keep-going instruction for Opus 5.5 workers, and the summary's
+unfinished-items line exposes what's left. If a summary still lists open items with no
+blocker, re-delegate with `--parent_task_id` naming them, at most two or three times.
+
+**Effort is already calibrated.** Opus 5.5 at `medium` matches or beats Opus 5 at `high`, so
+the high tier stays at medium. Lowering effort cuts thinking more reliably than prompt
+instructions do; don't add "think carefully" lines to a claude prompt.
 
 **Constrain the scope.** Opus 5 applies its own judgment about what a task should be and
 will add steps. For anything narrow, say so:
@@ -136,9 +169,9 @@ those, state the goal, the definition of done, and the constraints, then get out
 
 ## Coverage note
 
-No vendor document covers the default `sonnet` worker. Anthropic's Opus 5 guide describes
-behaviors that *changed* from prior models and explicitly does not generalize backward, so
-the claude section above is calibrated for `--effort high`. The shared rules apply to
+No vendor document covers the default `sonnet` worker. The claude section is calibrated from
+Anthropic's Opus 5 and Opus 5.5 guides (the 5.5 guide: platform.claude.com, "Prompting Claude
+Opus 5.5"), which describe Opus behavior only, so it fits `--effort high`. The shared rules apply to
 `sonnet` with confidence; treat the claude-specific items as likely-but-unverified there.
 
 ## Worked examples
