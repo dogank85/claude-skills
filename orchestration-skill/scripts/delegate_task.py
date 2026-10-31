@@ -28,11 +28,11 @@ MODEL_TIERS = {
     },
     "codex": {
         "standard": ("gpt-6-astra", "low"),
-        "high": ("gpt-6.1-sol", "high"),
+        "high": ("gpt-6.1-sol", "medium"),
     },
     "antigravity": {
-        "standard": ("gemini-3.8-flash-high", None),
-        "high": ("claude-opus-5-5-medium", None),
+        "standard": ("gemini-4-argon-medium", None),
+        "high": ("gemini-4-argon-high", None),
     },
 }
 
@@ -192,7 +192,7 @@ def main():
     parser.add_argument("--sandbox", action="store_true", help="Enable sandboxing for the agent.")
     parser.add_argument("--report", action="store_true", help="Request a detailed report in logs/results/.")
     parser.add_argument("--effort", choices=["standard", "high"], default="standard", help="Tier to delegate at: standard=fast/cheap, high=more capable. Picks a (model, reasoning effort) pair — see MODEL_TIERS.")
-    parser.add_argument("--model", help="Override the tier's model with a specific one (e.g. 'fable', 'opus', 'gemini-3.8-flash-low'). The tier's reasoning effort still applies. Passed through verbatim, so it must be a name the chosen agent's CLI accepts.")
+    parser.add_argument("--model", help="Override the tier's model with a specific one (e.g. 'fable', 'opus', 'gemini-4-argon-low'). The tier's reasoning effort still applies. Passed through verbatim, so it must be a name the chosen agent's CLI accepts.")
     parser.add_argument("--timeout", type=int, default=1800, help="Max agent runtime in seconds before it is auto-killed (default: 1800 = 30 min).")
 
     args = parser.parse_args()

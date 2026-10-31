@@ -42,7 +42,7 @@ def agy_model_slugs():
         return None
     slugs = set()
     for line in result.stdout.splitlines():
-        # "gemini-3.8-flash-high\tGemini 3.8 Flash (High)"
+        # "gemini-4-argon-medium\tGemini 4 Argon (Medium)"
         head = line.split("\t")[0].strip()
         if head and " " not in head:
             slugs.add(head)

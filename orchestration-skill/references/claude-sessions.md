@@ -12,14 +12,36 @@ background watcher. Only Claude-to-Claude work uses messages.
 | Role | Runs in | Name | Reports to |
 | --- | --- | --- | --- |
 | Top lead | `~/LocalProjects` | `lead` | the user |
-| Project lead | the project folder, e.g. `~/LocalProjects/HeroKid` | `<project>-lead`, e.g. `herokid-lead` | the user (and `lead`, once it exists) |
-| Worker | same folder as its lead | short task name, e.g. `hero`, `prompts` | its lead only |
+| Project lead | the project folder, e.g. `~/LocalProjects/HeroKid` | `<prefix>-lead`, e.g. `hk-lead` | the user (and `lead`, once it exists) |
+| Worker | same folder as its lead | `<prefix>-<role>`, e.g. `hk-builder`, `hk-sim` | its lead only |
 
 - The user talks to whichever lead fits: cross-project work goes to `lead`, project work
   goes to that project's lead.
 - Workers message only their lead, never the user or other workers.
 - A session is addressed by its name. Set it with `/rename <name>` or `--name`; auto-names
   are hard to use.
+
+### Naming
+
+`ListAgents` shows every Claude session on the machine, across projects, so every name
+starts with a short project prefix: `hk-` (HeroKid), `elo-` (EloSudoku), `wc-` (worldcup),
+`mkt-` (Marketing). Then one role from this fixed list:
+
+| Role | Job |
+| --- | --- |
+| `lead` | plans, splits work, reviews, talks to the user (one per project) |
+| `builder` | writes code and runs tests |
+| `reviewer` | reviews only, changes nothing |
+| `sim` | simulator or device testing; only a Desktop session with the simulator attached |
+| `web` | browser testing |
+| `research` | reading, searching, audits; no code |
+| `writer` | docs, copy, translations |
+
+- Name the job, never the start order (no `session03`).
+- Tool-bound names (`sim`, `web`) are a promise: if the session restarts without that
+  tool, rename or stop it before sending it work.
+- Number only duplicates: `hk-builder-2`, never `-1`.
+- Short, lowercase, no spaces.
 
 ## What needs the user's OK
 
@@ -44,15 +66,15 @@ The lead starts each worker as a named background session from the project folde
 
 ```bash
 cd /Users/dogankarakaya/LocalProjects/HeroKid && \
-claude --bg -n hero --permission-mode auto "<task prompt>"
+claude --bg -n hk-builder --permission-mode auto "<task prompt>"
 ```
 
 - `--bg` returns right away and prints an id. `claude agents` lists background sessions,
   `claude attach <id>` opens one, `claude logs <id>` shows recent output, and
   `claude stop <id>` ends it.
 - Start the task prompt with:
-  "You are worker `hero`. Your lead is `herokid-lead`. Report only via SendMessage to
-  `herokid-lead`. Read `.claude/skills/orchestration-skill/references/claude-sessions.md`
+  "You are worker `hk-builder`. Your lead is `hk-lead`. Report only via SendMessage to
+  `hk-lead`. Read `.claude/skills/orchestration-skill/references/claude-sessions.md`
   first." Then give the task and say what "done" means.
 - Right after starting a worker, the lead sends it `SendMessage` with
   `notify_when_idle: true`. The lead then hears back even if the worker forgets to report.
@@ -81,10 +103,10 @@ The first line must make sense on its own, because it is the only line the user 
 a preview:
 
 ```
-hero: Rev 6 done, needs yes/no on privacy text
+hk-builder: Rev 6 done, needs yes/no on privacy text
 - Three hero-creation paths written up; path 3 reuses the pet flow.
 - Open question: keep "never used to train AI" wording as-is?
-Full result: logs/orchestration/results/hero-rev6.md
+Full result: logs/orchestration/results/hk-builder-rev6.md
 ```
 
 - Keep it to 2–4 short lines after the first line, then the path to the full result.
@@ -99,12 +121,38 @@ Each lead keeps one short file, `plans/leads/<lead-name>.md` (gitignored), with 
 per task:
 
 ```
-hero | three ways to make a hero | waiting on user: privacy text | logs/orchestration/results/hero-rev6.md
-prompts | story prompt cleanup | running | -
+hk-builder | three ways to make a hero | waiting on user: privacy text | logs/orchestration/results/hk-builder-rev6.md
+hk-research | story prompt audit | running | -
 ```
 
 Update it whenever a task starts, finishes or gets stuck. After `/compact` or a restart,
 re-read it before answering "what's the status?".
+
+## Codex review on the PR
+
+Repos with the Codex GitHub app (`chatgpt-codex-connector[bot]`) get a review when a PR is
+**opened** or a draft is marked ready. Later pushes are **not** reviewed until someone
+comments `@codex review`:
+
+```bash
+gh pr comment <n> --body "@codex review"
+```
+
+- Done signal: a PR comment holds `"code_review":{"commit_sha":"<sha>",...,"status":"completed"}`
+  plus `has_any_findings`. Wait for it with a background watcher (it wakes the lead):
+
+  ```bash
+  for i in $(seq 1 60); do
+    s=$(gh api repos/<owner>/<repo>/issues/<n>/comments --jq '.[].body' \
+      | grep -o '"code_review":{[^}]*}' | grep <short-sha> | tail -1)
+    echo "$s" | grep -q '"status":"completed"' && { echo "$s"; exit 0; }
+    sleep 30
+  done; echo TIMEOUT
+  ```
+
+- Findings are inline comments: `gh api repos/<owner>/<repo>/pulls/<n>/comments --jq '.[] | "\(.path):\(.line) \(.body)"'`.
+- Loop: show findings to the user, send fixes to the builder, review its diff, push, comment
+  `@codex review` again. Merge only on a clean review and the user's OK.
 
 ## Finishing
 

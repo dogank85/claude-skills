@@ -61,8 +61,8 @@ For complex tasks (debugging race conditions, architectural refactoring), escala
 *   **Mechanism** — each tier is one (model, reasoning effort) pair, escalating on the axis that
     backend rewards:
     *   **Claude**: `sonnet` → `opus`, both at medium effort. The model carries the jump.
-    *   **Codex**: `gpt-6-astra` at `low` → `gpt-6.1-sol` at `high`. Both model and reasoning change.
-    *   **Antigravity**: `gemini-3.8-flash-high` → `claude-opus-5-5-medium`. Effort is baked into
+    *   **Codex**: `gpt-6-astra` at `low` → `gpt-6.1-sol` at `medium`. Both model and reasoning change.
+    *   **Antigravity**: `gemini-4-argon-medium` → `gemini-4-argon-high`. Effort is baked into
         the slug, so there is no separate dial.
 
 The canonical table is `MODEL_TIERS` in `scripts/delegate_task.py`; treat this section as

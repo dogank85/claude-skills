@@ -36,20 +36,20 @@ def build(agent, effort="standard", sandbox=False, parent=None, timeout=1800, mo
 
 
 class TestAntigravityCommand(unittest.TestCase):
-    def test_standard_uses_flash_high(self):
+    def test_standard_uses_argon_medium(self):
         cmd = build("antigravity", effort="standard")
         self.assertIn("agy -p", cmd)
-        self.assertIn('--model "gemini-3.8-flash-high"', cmd)
+        self.assertIn('--model "gemini-4-argon-medium"', cmd)
         self.assertIn("--add-dir", cmd)
         self.assertIn("--dangerously-skip-permissions", cmd)
         self.assertIn("--print-timeout 1800s", cmd)
 
-    def test_high_uses_claude_opus(self):
+    def test_high_uses_argon_high(self):
         cmd = build("antigravity", effort="high")
-        self.assertIn('--model "claude-opus-5-5-medium"', cmd)
+        self.assertIn('--model "gemini-4-argon-high"', cmd)
 
     def test_uses_slugs_not_display_names(self):
-        # Display names ("Gemini 3.8 Flash (High)") fail silently on a near-miss;
+        # Display names ("Gemini 4 Argon (Medium)") fail silently on a near-miss;
         # slugs are checkable against `agy models`. See test_model_roster.py.
         for effort in ("standard", "high"):
             self.assertNotIn("(", build("antigravity", effort=effort).split("--model")[1][:40])
@@ -106,7 +106,7 @@ class TestRegressionGuards(unittest.TestCase):
     def test_codex_high(self):
         cmd = build("codex", effort="high")
         self.assertIn("-m gpt-6.1-sol", cmd)
-        self.assertIn('-c model_reasoning_effort="high"', cmd)
+        self.assertIn('-c model_reasoning_effort="medium"', cmd)
 
     def test_codex_effort_is_always_explicit(self):
         # Omitting it inherits the user's interactive config.toml, which once made
@@ -205,7 +205,7 @@ class TestAugmentedPrompt(unittest.TestCase):
         marker = "A standing instruction from the user"
         self.assertIn(marker, build_augmented_prompt("x", "claude", self.SUMMARY, model="opus"))
         self.assertIn(marker, build_augmented_prompt("x", "antigravity", self.SUMMARY, model="claude-opus-5-5-medium"))
-        for agent, model in (("claude", "sonnet"), ("codex", "gpt-6.1-sol"), ("antigravity", "gemini-3.8-flash-high")):
+        for agent, model in (("claude", "sonnet"), ("codex", "gpt-6.1-sol"), ("antigravity", "gemini-4-argon-medium"), ("antigravity", "gemini-4-argon-high")):
             self.assertNotIn(marker, build_augmented_prompt("x", agent, self.SUMMARY, model=model))
 
     def test_extras_do_not_add_numbered_steps(self):

@@ -12,7 +12,7 @@ produces a different defect depending on which one you sent it to.
 
 | | `--agent claude` | `--agent codex` | `--agent antigravity` |
 | --- | --- | --- | --- |
-| Model | `sonnet` / `opus` | `gpt-6-astra` / `gpt-6.1-sol` | `gemini-3.8-flash-high` |
+| Model | `sonnet` / `opus` | `gpt-6-astra` / `gpt-6.1-sol` | `gemini-4-argon-medium` / `gemini-4-argon-high` |
 | Default scope behavior | **Widens** — adds steps you didn't ask for | **Narrows** — stops at a first pass | Follows the ask literally |
 | Default verbosity | **Over-writes** long documents | Moderate | **Under-writes** — terse by default |
 | Stopping behavior | Opus 5.5: may **end early on a progress report** (countered automatically) | **Stops to await review that never comes** | Runs to completion |
@@ -23,9 +23,8 @@ and hand back for review — which is right in an interactive session and silent
 here. It stops, the wrapper fires, and you get a summary describing a first pass as though
 it were the finished job.
 
-`--effort high` on antigravity routes to `claude-opus-5-5-medium`, a **Claude** model. At
-that tier the claude column applies, not the antigravity one. Claude's `opus` alias also
-resolves to Opus 5.5.
+Both antigravity tiers are Gemini (`gemini-4-argon-*`), so the antigravity column applies at
+either effort. Claude's `opus` alias resolves to Opus 5.5.
 
 ## What `delegate_task.py` already adds
 
@@ -153,17 +152,14 @@ extra thinking tokens. Use it for anything diagnostic.
 
 **Structure helps here.** See the scaffolding note below.
 
-**Watch the tier boundary.** `--effort high` is `claude-opus-5-5-medium`. Prompt it as a
-Claude worker.
-
 ## How much structure to use
 
 Google recommends heavy scaffolding — explicit plan/execute/validate steps, worked
 examples. OpenAI says elaborate recipes now hinder results. Both are right about their own
 model, and the resolution is a rule rather than a contradiction:
 
-**Scaffold inversely to model capability.** `gemini-3.8-flash-high` is the lightest model in
-the roster and benefits from structure and an example. `gpt-6-astra`, `gpt-6.1-sol` and `opus` are strong
+**Scaffold inversely to model capability.** `gemini-4-argon-medium`, the antigravity default,
+benefits from structure and an example. `gpt-6-astra`, `gpt-6.1-sol` and `opus` are strong
 enough that a detailed itinerary constrains them below what they'd do unprompted — for
 those, state the goal, the definition of done, and the constraints, then get out of the way.
 
