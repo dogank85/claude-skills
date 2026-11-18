@@ -51,6 +51,12 @@
             "source": "./summary",
             "description": "Generate structured conversation summaries for AI agent handoff and context preservation.",
             "version": "1.0.0"
+        },
+        {
+            "name": "herokid-verify",
+            "source": "./herokid-verify",
+            "description": "How to prove a HeroKid change works: checks per change kind and the Evidence block.",
+            "version": "1.0.0"
         }
     ]
 }

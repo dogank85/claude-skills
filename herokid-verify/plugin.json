@@ -1,0 +1,9 @@
+{
+  "name": "herokid-verify",
+  "version": "1.0.0",
+  "description": "How to prove a HeroKid change works: checks per change kind and the Evidence block.",
+  "author": {
+    "name": "Dogan Karakaya"
+  },
+  "commands": []
+}
