@@ -12,7 +12,7 @@ produces a different defect depending on which one you sent it to.
 
 | | `--agent claude` | `--agent codex` | `--agent antigravity` |
 | --- | --- | --- | --- |
-| Model | `sonnet` / `opus` | `gpt-6-astra` / `gpt-6.1-sol` | `gemini-4-argon-medium` / `gemini-4-argon-high` |
+| Model | `sonnet` / `opus` | `gpt-6.2-astra` / `gpt-6.2-sol` | `gemini-4-argon-medium` / `gemini-4-argon-high` |
 | Default scope behavior | **Widens** — adds steps you didn't ask for | **Narrows** — stops at a first pass | Follows the ask literally |
 | Default verbosity | **Over-writes** long documents | Moderate | **Under-writes** — terse by default |
 | Stopping behavior | Opus 5.5: may **end early on a progress report** (countered automatically) | **Stops to await review that never comes** | Runs to completion |
@@ -159,7 +159,7 @@ examples. OpenAI says elaborate recipes now hinder results. Both are right about
 model, and the resolution is a rule rather than a contradiction:
 
 **Scaffold inversely to model capability.** `gemini-4-argon-medium`, the antigravity default,
-benefits from structure and an example. `gpt-6-astra`, `gpt-6.1-sol` and `opus` are strong
+benefits from structure and an example. `gpt-6.2-astra`, `gpt-6.2-sol` and `opus` are strong
 enough that a detailed itinerary constrains them below what they'd do unprompted — for
 those, state the goal, the definition of done, and the constraints, then get out of the way.
 

@@ -27,8 +27,8 @@ MODEL_TIERS = {
         "high": ("opus", "medium"),
     },
     "codex": {
-        "standard": ("gpt-6-astra", "low"),
-        "high": ("gpt-6.1-sol", "medium"),
+        "standard": ("gpt-6.2-astra", "low"),
+        "high": ("gpt-6.2-sol", "medium"),
     },
     "antigravity": {
         "standard": ("gemini-4-argon-medium", None),

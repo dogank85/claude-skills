@@ -114,11 +114,11 @@ a grid of combinations at the moment you have least context.
 
 | Tier | `--agent claude` | `--agent codex` | `--agent antigravity` |
 | --- | --- | --- | --- |
-| *(default)* | `sonnet` + medium effort | `gpt-6-astra` + low effort | `gemini-4-argon-medium` |
-| `--effort high` | `opus` + medium effort | `gpt-6.1-sol` + medium effort | `gemini-4-argon-high` |
+| *(default)* | `sonnet` + medium effort | `gpt-6.2-astra` + low effort | `gemini-4-argon-medium` |
+| `--effort high` | `opus` + medium effort | `gpt-6.2-sol` + medium effort | `gemini-4-argon-high` |
 
 Each ladder escalates on the axis that backend actually rewards: claude changes the *model* and
-holds effort steady, codex moves to `gpt-6.1-sol` and raises *effort*, and agy bakes effort into the model
+holds effort steady, codex moves to `gpt-6.2-sol` and raises *effort*, and agy bakes effort into the model
 slug so there is nothing separate to turn.
 
 **`--model` overrides just the model** and keeps the tier's effort — `--model fable --effort high`
@@ -289,6 +289,7 @@ To maintain a clean and predictable environment, Orchestrators must adhere to th
 4.  **Auto-Wake**: Always start a background watcher after delegating to enable proactive notifications — `watch_task.py` for a single task, or `wait_for_tasks.py` for a batch (both via `run_in_background`) — with a timeout larger than the agent's.
 5.  **Match tools to the verb**: If the task must execute anything, delegate with `--sandbox` (see "What a delegated agent can actually do"). A worker without Bash will still answer; it just won't have run anything.
 6.  **Prompt for the backend you chose**: before writing a non-trivial delegated prompt, check that backend's row above — claude, codex and antigravity drift in different directions, so the same wording lands differently. `references/prompting-workers.md` has the detail.
+7.  **Codex GitHub PR review needs a READY PR**: the Codex GitHub integration auto-reviews a pull request only once it is *ready for review* — a draft PR gets no review. When Codex review is the plan, get the user's OK to open the PR as ready (or mark it ready); the automatic review runs only once — after pushing fix commits to the same PR, post an `@codex review` comment to get a re-review. Its result arrives as an issue comment, not a +1.
 
 ## Reference Files
 

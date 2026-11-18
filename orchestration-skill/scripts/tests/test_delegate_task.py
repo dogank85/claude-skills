@@ -100,12 +100,12 @@ class TestRegressionGuards(unittest.TestCase):
         cmd = build("codex", effort="standard")
         self.assertIn("codex exec", cmd)
         self.assertIn("--json", cmd)
-        self.assertIn("-m gpt-6-astra", cmd)
+        self.assertIn("-m gpt-6.2-astra", cmd)
         self.assertIn('-c model_reasoning_effort="low"', cmd)
 
     def test_codex_high(self):
         cmd = build("codex", effort="high")
-        self.assertIn("-m gpt-6.1-sol", cmd)
+        self.assertIn("-m gpt-6.2-sol", cmd)
         self.assertIn('-c model_reasoning_effort="medium"', cmd)
 
     def test_codex_effort_is_always_explicit(self):
@@ -205,7 +205,7 @@ class TestAugmentedPrompt(unittest.TestCase):
         marker = "A standing instruction from the user"
         self.assertIn(marker, build_augmented_prompt("x", "claude", self.SUMMARY, model="opus"))
         self.assertIn(marker, build_augmented_prompt("x", "antigravity", self.SUMMARY, model="claude-opus-5-5-medium"))
-        for agent, model in (("claude", "sonnet"), ("codex", "gpt-6.1-sol"), ("antigravity", "gemini-4-argon-medium"), ("antigravity", "gemini-4-argon-high")):
+        for agent, model in (("claude", "sonnet"), ("codex", "gpt-6.2-sol"), ("antigravity", "gemini-4-argon-medium"), ("antigravity", "gemini-4-argon-high")):
             self.assertNotIn(marker, build_augmented_prompt("x", agent, self.SUMMARY, model=model))
 
     def test_extras_do_not_add_numbered_steps(self):
